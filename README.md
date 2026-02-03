@@ -5,6 +5,9 @@
 - Vercel is configured via `vercel.json` at the repo root.
 - Deploy by importing the GitHub repo in Vercel. It will auto-use `web_app` as the root.
 
+### One-click Deploy
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ANTD-CR7/inferencealgorithm)
+
 ## Backend (later)
 - Backend artifacts are in `backend/`.
 - `backend/Dockerfile` runs `server.py` on port 8000.
