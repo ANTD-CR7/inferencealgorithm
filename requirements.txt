@@ -1,6 +1,8 @@
 fastapi==0.103.1
 uvicorn==0.23.2
 pydantic
+--index-url https://download.pytorch.org/whl/cpu
+torch
 pgmpy==0.1.25
 numpy==1.25.1
 pandas==2.1.0
