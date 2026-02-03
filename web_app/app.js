@@ -346,6 +346,21 @@ function updateNetworkInfo() {
 
     const varsPreview = nodes.slice(0, 10).join(', ') + (nodes.length > 10 ? '…' : '');
 
+    const cptSizes = currentNetwork.cpt_sizes || {};
+    const stateCounts = currentNetwork.state_counts || {};
+    const totalCpt = currentNetwork.total_cpt_entries ?? Object.values(cptSizes).reduce((a, b) => a + b, 0);
+
+    const largestCpts = Object.entries(cptSizes)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([k, v]) => `${k} (${v})`)
+        .join(', ');
+
+    const statePreview = Object.entries(stateCounts)
+        .slice(0, 6)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ');
+
     els.networkInfo.innerHTML = `
         <div><strong>Name:</strong> ${currentNetwork.name}</div>
         <div><strong>Nodes:</strong> ${n} &nbsp; <strong>Edges:</strong> ${m}</div>
@@ -353,6 +368,9 @@ function updateNetworkInfo() {
         <div><strong>Roots:</strong> ${roots.join(', ') || '—'}</div>
         <div><strong>Leaves:</strong> ${leaves.join(', ') || '—'}</div>
         <div><strong>Variables:</strong> ${varsPreview}</div>
+        <div><strong>Total CPT entries:</strong> ${totalCpt}</div>
+        <div><strong>Largest CPTs:</strong> ${largestCpts || '—'}</div>
+        <div><strong>State counts:</strong> ${statePreview || '—'}</div>
     `;
 }
 

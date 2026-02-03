@@ -31,6 +31,9 @@ class NetworkInfo(BaseModel):
     variables: List[str]
     nodes: List[str]
     edges: List[List[str]]
+    cpt_sizes: Dict[str, int] = {}
+    state_counts: Dict[str, int] = {}
+    total_cpt_entries: int = 0
 
 # --- API Endpoints ---
 
@@ -40,11 +43,33 @@ async def get_networks():
     networks = get_all_networks()
     info_list = []
     for name, model in networks.items():
+        cpt_sizes: Dict[str, int] = {}
+        state_counts: Dict[str, int] = {}
+        total_cpt_entries = 0
+
+        for node in model.nodes():
+            cpd = model.get_cpds(node)
+            if cpd is None:
+                continue
+            try:
+                size = int(cpd.values.size)
+            except Exception:
+                size = 0
+            cpt_sizes[node] = size
+            try:
+                state_counts[node] = int(getattr(cpd, "variable_card", 0) or 0)
+            except Exception:
+                state_counts[node] = 0
+            total_cpt_entries += size
+
         info_list.append(NetworkInfo(
             name=name,
             variables=list(model.nodes()),
             nodes=list(model.nodes()),
-            edges=[list(edge) for edge in model.edges()]
+            edges=[list(edge) for edge in model.edges()],
+            cpt_sizes=cpt_sizes,
+            state_counts=state_counts,
+            total_cpt_entries=total_cpt_entries
         ))
     return info_list
 
