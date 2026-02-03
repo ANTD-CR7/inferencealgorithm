@@ -484,10 +484,13 @@ init();
 function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
     const loading = document.getElementById('splineLoading');
+    const loadBtn = document.getElementById('splineLoadBtn');
     if (!spline) return;
 
     const url = spline.getAttribute('data-url');
     if (!url) return;
+
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 
     const startLoad = () => {
         if (!spline.getAttribute('url')) {
@@ -500,6 +503,17 @@ function setupSplineLazyLoad() {
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
+
+    if (isMobile) {
+        if (loading && loadBtn) {
+            loadBtn.classList.remove('hidden');
+            loadBtn.addEventListener('click', () => {
+                loadBtn.classList.add('hidden');
+                startLoad();
+            }, { once: true });
+        }
+        return;
+    }
 
     if (document.readyState === 'complete') {
         setTimeout(startLoad, 300);
