@@ -484,14 +484,11 @@ init();
 function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
     const loading = document.getElementById('splineLoading');
-    const loadBtn = document.getElementById('splineLoadBtn');
     const poster = document.getElementById('splinePoster');
     if (!spline) return;
 
     const url = spline.getAttribute('data-url');
     if (!url) return;
-
-    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 
     const startLoad = () => {
         if (!spline.getAttribute('url')) {
@@ -506,23 +503,6 @@ function setupSplineLazyLoad() {
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
-
-    if (poster) {
-        poster.addEventListener('click', () => {
-            startLoad();
-        }, { once: true });
-    }
-
-    if (isMobile) {
-        if (loading && loadBtn) {
-            loadBtn.classList.remove('hidden');
-            loadBtn.addEventListener('click', () => {
-                loadBtn.classList.add('hidden');
-                startLoad();
-            }, { once: true });
-        }
-        return;
-    }
 
     const idleStart = () => {
         if (window.requestIdleCallback) {
