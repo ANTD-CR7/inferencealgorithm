@@ -24,6 +24,7 @@ const els = {
     sampleRange: document.getElementById('sampleRange'),
     sampleVal: document.getElementById('sampleVal'),
     evidenceContainer: document.getElementById('evidenceContainer'),
+    networkInfo: document.getElementById('networkInfo'),
     compareToggle: document.getElementById('compareToggle'),
     compareSettings: document.getElementById('compareSettings'),
     compareMode: document.getElementById('compareMode'),
@@ -127,6 +128,7 @@ function loadNetworkUI(networkName) {
         setupQueryVar(v, idx === 0);
     });
 
+    updateNetworkInfo();
     renderNeuralMap();
 
     gsap.from(".glass-card", {
@@ -311,6 +313,47 @@ async function runInference() {
     } finally {
         els.runBtn.innerHTML = '<span class="btn-text">RUN INFERENCE</span><i class="ri-play-fill"></i>';
     }
+}
+
+function updateNetworkInfo() {
+    if (!els.networkInfo || !currentNetwork) return;
+
+    const nodes = currentNetwork.nodes || [];
+    const edges = currentNetwork.edges || [];
+    const n = nodes.length;
+    const m = edges.length;
+
+    const indeg = {};
+    const outdeg = {};
+    nodes.forEach(node => {
+        indeg[node] = 0;
+        outdeg[node] = 0;
+    });
+    edges.forEach(edge => {
+        const [from, to] = edge;
+        if (outdeg[from] !== undefined) outdeg[from] += 1;
+        if (indeg[to] !== undefined) indeg[to] += 1;
+    });
+
+    const indegVals = Object.values(indeg);
+    const outdegVals = Object.values(outdeg);
+    const avgIn = indegVals.length ? (indegVals.reduce((a, b) => a + b, 0) / indegVals.length) : 0;
+    const avgOut = outdegVals.length ? (outdegVals.reduce((a, b) => a + b, 0) / outdegVals.length) : 0;
+    const density = n > 1 ? (m / (n * (n - 1))) : 0;
+
+    const roots = nodes.filter(node => indeg[node] === 0);
+    const leaves = nodes.filter(node => outdeg[node] === 0);
+
+    const varsPreview = nodes.slice(0, 10).join(', ') + (nodes.length > 10 ? '…' : '');
+
+    els.networkInfo.innerHTML = `
+        <div><strong>Name:</strong> ${currentNetwork.name}</div>
+        <div><strong>Nodes:</strong> ${n} &nbsp; <strong>Edges:</strong> ${m}</div>
+        <div><strong>Density:</strong> ${density.toFixed(3)} &nbsp; <strong>Avg In:</strong> ${avgIn.toFixed(2)} &nbsp; <strong>Avg Out:</strong> ${avgOut.toFixed(2)}</div>
+        <div><strong>Roots:</strong> ${roots.join(', ') || '—'}</div>
+        <div><strong>Leaves:</strong> ${leaves.join(', ') || '—'}</div>
+        <div><strong>Variables:</strong> ${varsPreview}</div>
+    `;
 }
 
 async function fetchInference(payload) {
