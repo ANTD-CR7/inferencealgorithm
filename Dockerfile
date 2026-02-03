@@ -14,5 +14,5 @@ COPY . .
 # Expose port (default for Render is 10000 but we'll use $PORT)
 EXPOSE 8000
 
-# Start server using uvicorn
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "10000"]
+# Start server using uvicorn (using shell form to resolve $PORT)
+CMD uvicorn server:app --host 0.0.0.0 --port $PORT
