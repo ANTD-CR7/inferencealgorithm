@@ -485,6 +485,7 @@ function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
     const loading = document.getElementById('splineLoading');
     const loadBtn = document.getElementById('splineLoadBtn');
+    const poster = document.getElementById('splinePoster');
     if (!spline) return;
 
     const url = spline.getAttribute('data-url');
@@ -496,13 +497,21 @@ function setupSplineLazyLoad() {
         if (!spline.getAttribute('url')) {
             spline.setAttribute('url', url);
         }
+        if (loading) loading.classList.remove('hidden');
     };
 
     const hideLoading = () => {
         if (loading) loading.classList.add('hidden');
+        if (poster) poster.classList.add('hidden');
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
+
+    if (poster) {
+        poster.addEventListener('click', () => {
+            startLoad();
+        }, { once: true });
+    }
 
     if (isMobile) {
         if (loading && loadBtn) {
@@ -515,9 +524,17 @@ function setupSplineLazyLoad() {
         return;
     }
 
+    const idleStart = () => {
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(() => startLoad(), { timeout: 3000 });
+        } else {
+            setTimeout(startLoad, 1500);
+        }
+    };
+
     if (document.readyState === 'complete') {
-        setTimeout(startLoad, 300);
+        idleStart();
     } else {
-        window.addEventListener('load', () => setTimeout(startLoad, 300), { once: true });
+        window.addEventListener('load', idleStart, { once: true });
     }
 }
