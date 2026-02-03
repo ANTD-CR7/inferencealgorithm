@@ -150,11 +150,13 @@ async def run_inference(req: InferenceRequest):
 
 # --- Serve Static Files ---
 import os
+
+# Serve PNGs/results first
+app.mount("/results", StaticFiles(directory=".", html=False), name="results")
+
+# Serve UI at root
 if os.path.exists("web_app"):
     app.mount("/", StaticFiles(directory="web_app", html=True), name="static")
-
-# Serve PNGs from root if they exist
-app.mount("/results", StaticFiles(directory=".", html=False), name="results")
 
 
 if __name__ == "__main__":
