@@ -1,7 +1,7 @@
 # inferencealgorithm
 
 ## Live Demo
-- Coming soon (add Vercel URL here)
+- https://inferencealgorithm.vercel.app/
 
 ## Frontend (Vercel)
 - The static UI lives in `web_app/`.
