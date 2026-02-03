@@ -47,6 +47,7 @@ async function init() {
     }
     setCompareUI(false);
     applyCompareMode();
+    setupSplineLazyLoad();
 }
 
 function setupEventListeners() {
@@ -479,3 +480,30 @@ function setupAether() {
 }
 
 init();
+
+function setupSplineLazyLoad() {
+    const spline = document.querySelector('spline-viewer');
+    const loading = document.getElementById('splineLoading');
+    if (!spline) return;
+
+    const url = spline.getAttribute('data-url');
+    if (!url) return;
+
+    const startLoad = () => {
+        if (!spline.getAttribute('url')) {
+            spline.setAttribute('url', url);
+        }
+    };
+
+    const hideLoading = () => {
+        if (loading) loading.classList.add('hidden');
+    };
+
+    spline.addEventListener('load', hideLoading, { once: true });
+
+    if (document.readyState === 'complete') {
+        setTimeout(startLoad, 300);
+    } else {
+        window.addEventListener('load', () => setTimeout(startLoad, 300), { once: true });
+    }
+}
