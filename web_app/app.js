@@ -47,11 +47,7 @@ async function init() {
     setupEventListeners();
     await fetchNetworks();
     setupAether();
-    if (els.compareToggle) {
-        els.compareToggle.checked = false;
-    }
-    setCompareUI(false);
-    applyCompareMode();
+    loadAppState(); // Restore saved state
     setupSplineLazyLoad();
 }
 
@@ -99,7 +95,10 @@ function setupEventListeners() {
         els.compareMode.addEventListener('change', applyCompareMode);
     }
 
-    els.runBtn.addEventListener('click', runInference);
+    els.runBtn.addEventListener('click', () => {
+        runInference();
+        triggerNeuralPulse();
+    });
 }
 
 async function fetchNetworks() {
@@ -135,13 +134,7 @@ function loadNetworkUI(networkName) {
     updateNetworkInfo();
     renderNeuralMap();
 
-    gsap.from(".glass-card", {
-        duration: 0.8,
-        y: 30,
-        opacity: 0,
-        stagger: 0.1,
-        ease: "power2.out"
-    });
+    saveAppState();
 }
 
 function renderNeuralMap() {
@@ -227,6 +220,7 @@ function toggleEvidence(nodeId) {
     }
     networkVis.body.data.nodes.update(node);
     updateNeuralStatusUI();
+    saveAppState();
 }
 
 function updateNeuralStatusUI() {
@@ -521,6 +515,7 @@ function setupAether() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height, particles = [];
+    let mouse = { x: -1000, y: -1000, active: false };
 
     function resize() {
         width = canvas.width = window.innerWidth;
@@ -529,28 +524,54 @@ function setupAether() {
 
     class Particle {
         constructor() {
+            this.init();
+        }
+        init() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.size = Math.random() * 2;
+            this.size = Math.random() * 2 + 1;
+            this.baseX = this.x;
+            this.baseY = this.y;
             this.speedX = (Math.random() - 0.5) * 0.5;
             this.speedY = (Math.random() - 0.5) * 0.5;
-            this.alpha = Math.random();
+            this.alpha = Math.random() * 0.5 + 0.2;
+            this.color = Math.random() > 0.5 ? '#06b6d4' : '#8b5cf6';
         }
         update() {
+            // Natural drift
             this.x += this.speedX;
             this.y += this.speedY;
-            if (this.x < 0 || this.x > width) this.speedX *= -1;
-            if (this.y < 0 || this.y > height) this.speedY *= -1;
+
+            // Interaction
+            if (mouse.active) {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    const force = (150 - dist) / 150;
+                    this.x -= dx * force * 0.05;
+                    this.y -= dy * force * 0.05;
+                }
+            }
+
+            // Boundary wrap
+            if (this.x < 0) this.x = width;
+            if (this.x > width) this.x = 0;
+            if (this.y < 0) this.y = height;
+            if (this.y > height) this.y = 0;
         }
         draw() {
-            ctx.fillStyle = `rgba(99, 102, 241, ${this.alpha * 0.3})`;
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.alpha;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();
+            ctx.globalAlpha = 1;
         }
     }
 
-    for (let i = 0; i < 100; i++) particles.push(new Particle());
+    const count = window.innerWidth < 768 ? 50 : 100;
+    for (let i = 0; i < count; i++) particles.push(new Particle());
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
@@ -559,11 +580,177 @@ function setupAether() {
     }
 
     window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+    });
+    window.addEventListener('mouseleave', () => mouse.active = false);
+    window.addEventListener('touchstart', (e) => {
+        mouse.x = e.touches[0].clientX;
+        mouse.y = e.touches[0].clientY;
+        mouse.active = true;
+    });
+    window.addEventListener('touchend', () => mouse.active = false);
+
     resize();
     animate();
 }
 
-init();
+// --- Persistence ---
+
+function saveAppState() {
+    const state = {
+        networkName: els.networkSelect.value,
+        algorithm: currentAlgorithm,
+        evidence: currentEvidence,
+        samples: els.sampleRange.value,
+        compareEnabled: els.compareToggle?.checked,
+        compareMode: els.compareMode?.value
+    };
+    localStorage.setItem('inference_lab_state', JSON.stringify(state));
+}
+
+function loadAppState() {
+    const saved = localStorage.getItem('inference_lab_state');
+    if (!saved) {
+        setCompareUI(false);
+        applyCompareMode();
+        return;
+    }
+
+    try {
+        const state = JSON.parse(saved);
+        if (state.networkName) els.networkSelect.value = state.networkName;
+        if (state.algorithm) {
+            currentAlgorithm = state.algorithm;
+            els.tabBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.algo === currentAlgorithm);
+            });
+            els.gibbsSettings.classList.toggle('hidden', currentAlgorithm !== 'gibbs');
+        }
+        if (state.evidence) currentEvidence = state.evidence;
+        if (state.samples) {
+            els.sampleRange.value = state.samples;
+            els.sampleVal.textContent = state.samples;
+        }
+        if (state.compareEnabled !== undefined && els.compareToggle) {
+            els.compareToggle.checked = state.compareEnabled;
+            setCompareUI(state.compareEnabled);
+        }
+        if (state.compareMode && els.compareMode) {
+            els.compareMode.value = state.compareMode;
+        }
+        applyCompareMode();
+
+        // Load the network specifically to restore map evidence
+        if (state.networkName) loadNetworkUI(state.networkName, true);
+    } catch (err) {
+        console.error("Error loading state", err);
+    }
+}
+
+// Updated loadNetworkUI to handle persistence
+const originalLoadNetworkUI = loadNetworkUI;
+loadNetworkUI = function (networkName, isRestoring = false) {
+    currentNetwork = networks.find(n => n.name === networkName);
+    if (!currentNetwork) return;
+
+    els.queryContainer.innerHTML = '';
+    currentNetwork.variables.forEach((v, idx) => {
+        setupQueryVar(v, idx === 0);
+    });
+
+    updateNetworkInfo();
+    renderNeuralMap();
+
+    // If restoring, we need to manually update the nodes that were evidence
+    if (isRestoring) {
+        Object.entries(currentEvidence).forEach(([nodeId, val]) => {
+            const node = networkVis.body.data.nodes.get(nodeId);
+            if (node) {
+                if (val === 1) {
+                    node.color = { background: '#10b981', border: '#fff' };
+                    node.shadow = { color: 'rgba(16, 185, 129, 0.8)', size: 20 };
+                } else {
+                    node.color = { background: '#ef4444', border: '#fff' };
+                    node.shadow = { color: 'rgba(239, 68, 68, 0.8)', size: 20 };
+                }
+                networkVis.body.data.nodes.update(node);
+            }
+        });
+        updateNeuralStatusUI();
+    } else {
+        gsap.from(".glass-card", {
+            duration: 0.8,
+            y: 30,
+            opacity: 0,
+            stagger: 0.1,
+            ease: "power2.out"
+        });
+    }
+    saveAppState();
+    showToast("State Auto-saved");
+};
+
+function showToast(message) {
+    let toast = document.getElementById('persistence-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'persistence-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// --- Animations ---
+
+function triggerNeuralPulse() {
+    if (!networkVis || !currentNetwork) return;
+
+    const queryVar = document.querySelector('input[name="queryVar"]:checked')?.value;
+    const evidenceNodes = Object.keys(currentEvidence);
+
+    // Animate edges from evidence to highlight "flow"
+    const edges = networkVis.body.data.edges.get();
+    edges.forEach(edge => {
+        if (evidenceNodes.includes(edge.from)) {
+            const originalColor = edge.color.color;
+            networkVis.body.data.edges.update({
+                id: edge.id,
+                color: { color: '#06b6d4', opacity: 1 },
+                width: 4
+            });
+            setTimeout(() => {
+                networkVis.body.data.edges.update({
+                    id: edge.id,
+                    color: { color: originalColor },
+                    width: 2
+                });
+            }, 1000);
+        }
+    });
+
+    // Pulse the query node
+    if (queryVar) {
+        const node = networkVis.body.data.nodes.get(queryVar);
+        if (node) {
+            const originalShadow = node.shadow;
+            networkVis.body.data.nodes.update({
+                id: queryVar,
+                shadow: { color: '#fff', size: 40 }
+            });
+            setTimeout(() => {
+                networkVis.body.data.nodes.update({
+                    id: queryVar,
+                    shadow: originalShadow
+                });
+            }, 1500);
+        }
+    }
+}
 
 function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
@@ -607,12 +794,6 @@ function setupSplineLazyLoad() {
     }, { threshold: 0.1 });
 
     observer.observe(spline);
-
-    // Dynamic responsiveness
-    window.addEventListener('resize', () => {
-        const newIsMobile = window.innerWidth < 768;
-        if (newIsMobile !== isMobile) {
-            // Refresh logic if needed, or just adjust styles via CSS
-        }
-    });
 }
+
+init();
