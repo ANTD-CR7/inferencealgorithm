@@ -1,5 +1,8 @@
 # inferencealgorithm
 
+## Live Demo
+- Coming soon (add Vercel URL here)
+
 ## Frontend (Vercel)
 - The static UI lives in `web_app/`.
 - Vercel is configured via `vercel.json` at the repo root.
