@@ -1,12 +1,14 @@
-fastapi==0.103.1
-uvicorn==0.23.2
+fastapi
+uvicorn
 pydantic
---index-url https://download.pytorch.org/whl/cpu
-torch
-pgmpy==0.1.25
-numpy==1.25.1
-pandas==2.1.0
+pgmpy==1.0.0
+numpy
+pandas
 matplotlib
 networkx
 python-multipart
-scipy==1.11.1
+scipy
+statsmodels
+tqdm
+joblib
+opt-einsum
