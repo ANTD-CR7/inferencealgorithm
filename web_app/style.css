@@ -358,11 +358,13 @@ body {
 .radio-item {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
-    padding: 0.5rem 0.8rem;
-    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    /* Larger touch targets */
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     transition: all 0.2s;
+    user-select: none;
 }
 
 .radio-item:has(input:checked) {
@@ -584,6 +586,20 @@ input[type=range] {
 
     .chart-container {
         height: 320px;
+    }
+}
+
+@media (max-width: 860px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .control-panel {
+        order: 2;
+    }
+
+    .results-panel {
+        order: 1;
     }
 }
 

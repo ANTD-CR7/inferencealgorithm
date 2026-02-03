@@ -179,6 +179,13 @@ function renderNeuralMap() {
     };
 
     networkVis = new vis.Network(container, data, options);
+
+    // Auto-scale on window resize
+    window.addEventListener('resize', () => {
+        networkVis.redraw();
+        networkVis.fit();
+    });
+
     currentEvidence = {};
     updateNeuralStatusUI();
 
@@ -416,7 +423,14 @@ function updateResults(data) {
         yaxis: { range: [0, 1] },
         margin: { t: 40, b: 40, l: 40, r: 40 }
     };
-    Plotly.newPlot('probabilityChart', [trace], layout, { displayModeBar: false });
+
+    const config = {
+        displayModeBar: false,
+        responsive: true,
+        staticPlot: false
+    };
+
+    Plotly.newPlot('probabilityChart', [trace], layout, config);
 }
 
 function updateCompareResults(veData, gibbsData) {
@@ -454,7 +468,12 @@ function updateCompareResults(veData, gibbsData) {
         margin: { t: 40, b: 40, l: 40, r: 40 }
     };
 
-    Plotly.newPlot('compareChart', [traceVe, traceGibbs], layout, { displayModeBar: false });
+    const config = {
+        displayModeBar: false,
+        responsive: true
+    };
+
+    Plotly.newPlot('compareChart', [traceVe, traceGibbs], layout, config);
 }
 
 function setCompareUI(isCompare) {
