@@ -37,6 +37,11 @@ class NetworkInfo(BaseModel):
 
 # --- API Endpoints ---
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Render."""
+    return {"status": "healthy"}
+
 @app.get("/api/networks", response_model=List[NetworkInfo])
 async def get_networks():
     """Returns available networks and their structure."""
@@ -144,8 +149,13 @@ async def run_inference(req: InferenceRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- Serve Static Files ---
-app.mount("/results", StaticFiles(directory="."), name="results") # Serve PNGs from root
-app.mount("/", StaticFiles(directory="web_app", html=True), name="static")
+import os
+if os.path.exists("web_app"):
+    app.mount("/", StaticFiles(directory="web_app", html=True), name="static")
+
+# Serve PNGs from root if they exist
+app.mount("/results", StaticFiles(directory=".", html=False), name="results")
+
 
 if __name__ == "__main__":
     import uvicorn
