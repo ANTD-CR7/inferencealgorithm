@@ -1,5 +1,9 @@
 
-const API_BASE = 'http://localhost:8000/api';
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : '/api';
+
 
 // State
 let networks = [];
@@ -551,31 +555,45 @@ function setupSplineLazyLoad() {
     const url = spline.getAttribute('data-url');
     if (!url) return;
 
+    // Detect mobile for quality switch
+    const isMobile = window.innerWidth < 768;
+
     const startLoad = () => {
         if (!spline.getAttribute('url')) {
+            // Set quality based on device
+            if (isMobile) {
+                spline.setAttribute('hint', 'pbr'); // Use slightly lower quality for mobile
+            }
             spline.setAttribute('url', url);
         }
-        if (loading) loading.classList.remove('hidden');
     };
 
     const hideLoading = () => {
-        if (loading) loading.classList.add('hidden');
-        if (poster) poster.classList.add('hidden');
+        if (loading) {
+            gsap.to(loading, { opacity: 0, duration: 0.5, onComplete: () => loading.classList.add('hidden') });
+        }
+        if (poster) {
+            gsap.to(poster, { opacity: 0, duration: 0.8, onComplete: () => poster.classList.add('hidden') });
+        }
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
 
-    const idleStart = () => {
-        if (window.requestIdleCallback) {
-            window.requestIdleCallback(() => startLoad(), { timeout: 3000 });
-        } else {
-            setTimeout(startLoad, 1500);
+    // Use Intersection Observer for more efficient loading
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+            startLoad();
+            observer.disconnect();
         }
-    };
+    }, { threshold: 0.1 });
 
-    if (document.readyState === 'complete') {
-        idleStart();
-    } else {
-        window.addEventListener('load', idleStart, { once: true });
-    }
+    observer.observe(spline);
+
+    // Dynamic responsiveness
+    window.addEventListener('resize', () => {
+        const newIsMobile = window.innerWidth < 768;
+        if (newIsMobile !== isMobile) {
+            // Refresh logic if needed, or just adjust styles via CSS
+        }
+    });
 }

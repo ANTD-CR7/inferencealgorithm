@@ -15,20 +15,6 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <!-- GSAP for Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <!-- Vis.js for Neural Map -->
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <!-- Spline Viewer -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.94/build/spline-viewer.js"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-    <!-- Ambient Architecture -->
-    <canvas id="aether-canvas"></canvas>
     <div class="bg-glow"></div>
     <div class="grid-overlay"></div>
 
@@ -176,17 +162,23 @@
                             <div class="compare-card glass-card">
                                 <div class="compare-title">EXACT (VE)</div>
                                 <div class="compare-metrics">
-                                    <div><span class="label">P(FALSE)</span><span class="value red" id="veProb0">--</span></div>
-                                    <div><span class="label">P(TRUE)</span><span class="value green" id="veProb1">--</span></div>
-                                    <div><span class="label">LATENCY</span><span class="value cyan" id="veLatency">--</span></div>
+                                    <div><span class="label">P(FALSE)</span><span class="value red"
+                                            id="veProb0">--</span></div>
+                                    <div><span class="label">P(TRUE)</span><span class="value green"
+                                            id="veProb1">--</span></div>
+                                    <div><span class="label">LATENCY</span><span class="value cyan"
+                                            id="veLatency">--</span></div>
                                 </div>
                             </div>
                             <div class="compare-card glass-card">
                                 <div class="compare-title">GIBBS</div>
                                 <div class="compare-metrics">
-                                    <div><span class="label">P(FALSE)</span><span class="value red" id="gibbsProb0">--</span></div>
-                                    <div><span class="label">P(TRUE)</span><span class="value green" id="gibbsProb1">--</span></div>
-                                    <div><span class="label">LATENCY</span><span class="value cyan" id="gibbsLatency">--</span></div>
+                                    <div><span class="label">P(FALSE)</span><span class="value red"
+                                            id="gibbsProb0">--</span></div>
+                                    <div><span class="label">P(TRUE)</span><span class="value green"
+                                            id="gibbsProb1">--</span></div>
+                                    <div><span class="label">LATENCY</span><span class="value cyan"
+                                            id="gibbsLatency">--</span></div>
                                 </div>
                             </div>
                         </div>
@@ -241,6 +233,6 @@
     </main>
 
     <script src="app.js"></script>
-</body>
+    </body>
 
 </html>

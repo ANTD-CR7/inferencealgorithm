@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Visual Studio
+.vs/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Build / Output
+*.png
+*.csv
+accuracy_comparison.png
+convergence_analysis.png
+runtime_comparison.png
+accuracy_results.csv
+convergence_results.csv
+runtime_results.csv
