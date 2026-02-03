@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Inference Lab</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Vis.js for Neural Map -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Spline Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.94/build/spline-viewer.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Ambient Architecture -->
+    <canvas id="aether-canvas"></canvas>
+    <div class="bg-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="glass-nav">
+        <div class="logo">
+            <i class="ri-dna-line"></i>
+            <span>INFERENCE<span class="highlight">LAB</span></span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn active" data-view="lab"><i class="ri-flask-line"></i> LIVE LAB</button>
+            <button class="nav-btn" data-view="benchmarks"><i class="ri-bar-chart-box-line"></i> BENCHMARKS</button>
+        </div>
+        <div class="status-indicators">
+            <div class="status-item">
+                <div class="dot green"></div>ONLINE
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+
+        <!-- VIEW 1: LIVE LAB -->
+        <div id="view-lab" class="view active">
+            <!-- Hero Section: NEURAL MAP + SPLINE OVERLAY -->
+            <section class="neural-map-container">
+                <div id="neuralMap"></div>
+                <spline-viewer class="spline-scene"
+                    url="https://prod.spline.design/Lb8u6wiVov4g-UiM/scene.splinecode"></spline-viewer>
+                <div class="map-overlay">
+                    <div class="floating-badge">NEURAL-LINK ACTIVE</div>
+                    <div class="map-hint">Click a neuron to probe state</div>
+                </div>
+            </section>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+
+                <!-- Sidebar: Controls -->
+                <aside class="control-panel glass-card">
+                    <div class="panel-header">
+                        <i class="ri-settings-4-line"></i>
+                        <h2>CONTROLS</h2>
+                    </div>
+
+                    <div class="control-group">
+                        <label>SELECT NETWORK</label>
+                        <select id="networkSelect" class="cyber-select">
+                            <option value="" disabled selected>Loading networks...</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>TARGET VARIABLE (QUERY)</label>
+                        <div id="queryVarContainer" class="radio-group">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="control-group control-note">
+                        <label>NEURON OBSERVATIONS</label>
+                        <div class="neural-status-info">
+                            Observations are disabled while Spline is active.
+                        </div>
+                        <div id="evidenceContainer" class="evidence-list hidden">
+                            <!-- Keeping for logic but hiding from UI -->
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>ALGORITHM</label>
+                        <div class="tabs">
+                            <button class="tab-btn active" data-algo="ve">EXACT (VE)</button>
+                            <button class="tab-btn" data-algo="gibbs">GIBBS</button>
+                        </div>
+                    </div>
+
+                    <div id="gibbsSettings" class="control-group hidden">
+                        <label>SAMPLES: <span id="sampleVal">10000</span></label>
+                        <input type="range" id="sampleRange" min="1000" max="50000" step="1000" value="10000">
+                    </div>
+
+                    <div class="control-group">
+                        <label>COMPARE ALGORITHMS</label>
+                        <label class="switch">
+                            <input type="checkbox" id="compareToggle">
+                            <span class="slider"></span>
+                            <span class="switch-label">Run VE + Gibbs Together</span>
+                        </label>
+                    </div>
+
+                    <div id="compareSettings" class="control-group hidden">
+                        <label>COMPARISON VIEW</label>
+                        <select id="compareMode" class="cyber-select">
+                            <option value="cards">Side-by-side Cards</option>
+                            <option value="chart">Combined Chart</option>
+                            <option value="both" selected>Both Cards + Chart</option>
+                        </select>
+                    </div>
+
+                    <button id="runBtn" class="cyber-btn">
+                        <span class="btn-text">RUN INFERENCE</span>
+                        <i class="ri-play-fill"></i>
+                    </button>
+                </aside>
+
+                <!-- Main Display: Results -->
+                <section class="results-panel">
+
+                    <!-- Result Cards (Single) -->
+                    <div class="stats-row single-only">
+                        <div class="stat-card glass-card">
+                            <span class="label">P(FALSE)</span>
+                            <div class="value red" id="prob0">--</div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <span class="label">P(TRUE)</span>
+                            <div class="value green" id="prob1">--</div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <span class="label">LATENCY</span>
+                            <div class="value cyan" id="latency">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart (Single) -->
+                    <div class="chart-container glass-card single-only">
+                        <div id="probabilityChart"></div>
+                    </div>
+
+                    <!-- Comparison Results -->
+                    <div id="compareSection" class="compare-only hidden">
+                        <div class="compare-header">
+                            <h3><i class="ri-bar-chart-box-line"></i> ALGORITHM COMPARISON</h3>
+                            <p>VE vs Gibbs side-by-side for the same query and evidence.</p>
+                        </div>
+
+                        <div class="compare-cards">
+                            <div class="compare-card glass-card">
+                                <div class="compare-title">EXACT (VE)</div>
+                                <div class="compare-metrics">
+                                    <div><span class="label">P(FALSE)</span><span class="value red" id="veProb0">--</span></div>
+                                    <div><span class="label">P(TRUE)</span><span class="value green" id="veProb1">--</span></div>
+                                    <div><span class="label">LATENCY</span><span class="value cyan" id="veLatency">--</span></div>
+                                </div>
+                            </div>
+                            <div class="compare-card glass-card">
+                                <div class="compare-title">GIBBS</div>
+                                <div class="compare-metrics">
+                                    <div><span class="label">P(FALSE)</span><span class="value red" id="gibbsProb0">--</span></div>
+                                    <div><span class="label">P(TRUE)</span><span class="value green" id="gibbsProb1">--</span></div>
+                                    <div><span class="label">LATENCY</span><span class="value cyan" id="gibbsLatency">--</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container glass-card" id="compareChartContainer">
+                            <div id="compareChart"></div>
+                        </div>
+                    </div>
+
+                    <!-- Network Info -->
+                    <div class="info-container glass-card">
+                        <h3><i class="ri-node-tree"></i> NETWORK STRUCTURE</h3>
+                        <div id="networkInfo">Select a network to view details.</div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+
+        <!-- VIEW 2: BENCHMARKS -->
+        <div id="view-benchmarks" class="view">
+            <h1 class="view-title">EXPERIMENT ANALYTICS</h1>
+            <p class="view-subtitle">Historical Benchmark Results & Comparative Studies</p>
+
+            <div class="benchmark-gallery">
+                <!-- Runtime Comparison -->
+                <div class="benchmark-card glass-card">
+                    <h3><i class="ri-speed-line"></i> Runtime Analysis</h3>
+                    <p>Comparison of execution time for Variable Elimination vs Gibbs Sampling.</p>
+                    <img src="/results/runtime_comparison.png" alt="Runtime Benchmarks"
+                        onerror="this.src='https://placehold.co/600x400/1e293b/a5b4fc?text=No+Results+Found'">
+                </div>
+
+                <!-- Accuracy Comparison -->
+                <div class="benchmark-card glass-card">
+                    <h3><i class="ri-percent-line"></i> Inference Accuracy</h3>
+                    <p>Mean Absolute Error (MAE) of approximate sampling across different networks.</p>
+                    <img src="/results/accuracy_comparison.png" alt="Accuracy Benchmarks"
+                        onerror="this.src='https://placehold.co/600x400/1e293b/a5b4fc?text=No+Results+Found'">
+                </div>
+
+                <!-- Convergence Study -->
+                <div class="benchmark-card glass-card">
+                    <h3><i class="ri-bubble-chart-line"></i> Convergence Pattern</h3>
+                    <p>Analysis of how Gibbs Sampling error reduces relative to sample volume.</p>
+                    <img src="/results/convergence_analysis.png" alt="Convergence Benchmarks"
+                        onerror="this.src='https://placehold.co/600x400/1e293b/a5b4fc?text=No+Results+Found'">
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
