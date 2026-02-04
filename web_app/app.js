@@ -18,6 +18,7 @@ let currentAlgorithm = 've';
 let networkVis = null;
 let currentEvidence = {};
 let resizeHandlerBound = false;
+let pulseInterval = null;
 
 // DOM Elements
 const els = {
@@ -325,6 +326,8 @@ function renderNeuralMap() {
 
     networkVis.on("hoverNode", () => { container.style.cursor = 'crosshair'; });
     networkVis.on("blurNode", () => { container.style.cursor = 'default'; });
+
+    startNodePulse();
 }
 
 function toggleEvidence(nodeId) {
@@ -350,6 +353,26 @@ function toggleEvidence(nodeId) {
     networkVis.body.data.nodes.update(node);
     updateNeuralStatusUI();
     saveAppState();
+}
+
+function startNodePulse() {
+    if (!networkVis) return;
+    if (pulseInterval) clearInterval(pulseInterval);
+
+    const baseSize = 25;
+    let t = 0;
+
+    pulseInterval = setInterval(() => {
+        if (!networkVis || !networkVis.body || !networkVis.body.data) return;
+        const nodes = networkVis.body.data.nodes.get();
+        const pulse = Math.sin(t) * 2; // subtle size pulse
+        const updates = nodes.map(n => ({
+            id: n.id,
+            size: baseSize + pulse
+        }));
+        networkVis.body.data.nodes.update(updates);
+        t += 0.25;
+    }, 120);
 }
 
 function updateNeuralStatusUI() {
