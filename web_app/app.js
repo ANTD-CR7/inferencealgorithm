@@ -50,7 +50,9 @@ const els = {
     gibbsLatency: document.getElementById('gibbsLatency'),
     compareChartContainer: document.getElementById('compareChartContainer'),
     compareGroup: document.getElementById('compareGroup'),
-    runStatus: document.getElementById('runStatus')
+    runStatus: document.getElementById('runStatus'),
+    reduceVisuals: document.getElementById('reduceVisuals'),
+    evidenceTip: document.getElementById('evidenceTip')
 };
 
 // Init
@@ -65,6 +67,8 @@ async function init() {
     ensureVisNetwork();
     ensureGsap();
     setCompareAvailability(false);
+    setupReduceVisuals();
+    showEvidenceTipOnce();
 
     if (!resizeHandlerBound) {
         window.addEventListener('resize', () => {
@@ -75,6 +79,29 @@ async function init() {
         });
         resizeHandlerBound = true;
     }
+}
+
+function setupReduceVisuals() {
+    if (!els.reduceVisuals) return;
+    const saved = localStorage.getItem('reduce_visuals') === '1';
+    els.reduceVisuals.checked = saved;
+    document.body.classList.toggle('reduced-visuals', saved);
+
+    els.reduceVisuals.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
+        document.body.classList.toggle('reduced-visuals', enabled);
+        localStorage.setItem('reduce_visuals', enabled ? '1' : '0');
+    });
+}
+
+function showEvidenceTipOnce() {
+    if (!els.evidenceTip) return;
+    if (localStorage.getItem('evidence_tip_shown') === '1') return;
+    els.evidenceTip.classList.remove('hidden');
+    setTimeout(() => {
+        els.evidenceTip.classList.add('hidden');
+        localStorage.setItem('evidence_tip_shown', '1');
+    }, 4000);
 }
 
 function setCompareAvailability(enabled) {
@@ -554,7 +581,7 @@ async function runInference() {
             setCompareAvailability(true);
         }
     } catch (err) {
-        alert("Error: " + err.message);
+        showToast("Something went wrong. Please try again.");
     } finally {
         els.runBtn.innerHTML = '<span class="btn-text">RUN INFERENCE</span><i class="ri-play-fill"></i>';
         if (els.runStatus) els.runStatus.classList.add('hidden');
