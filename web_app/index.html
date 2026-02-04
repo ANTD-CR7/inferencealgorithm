@@ -15,6 +15,11 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <canvas id="aether-canvas"></canvas>
     <div class="bg-glow"></div>
     <div class="grid-overlay"></div>
 
@@ -232,7 +237,10 @@
 
     </main>
 
-    <script src="app.js"></script>
-    </body>
+    <script>
+        window.API_BASE = "https://bayesian-inference-lab.onrender.com/api";
+    </script>
+    <script src="/app.js"></script>
+  </body>
 
 </html>
