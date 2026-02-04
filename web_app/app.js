@@ -524,9 +524,18 @@ function startNodeFlow() {
     let prevId = null;
     flowInterval = setInterval(() => {
         if (!networkVis || !networkVis.body || !networkVis.body.data) return;
-        const currentId = nodes[idx].id;
+        const queryVar = document.querySelector('input[name="queryVar"]:checked')?.value;
+        let currentId = nodes[idx].id;
 
-        if (prevId !== null) {
+        // Skip evidence and query nodes for flow so colors don't override user intent
+        let guard = 0;
+        while ((currentEvidence[currentId] !== undefined || currentId === queryVar) && guard < nodes.length) {
+            idx = (idx + 1) % nodes.length;
+            currentId = nodes[idx].id;
+            guard++;
+        }
+
+        if (prevId !== null && currentEvidence[prevId] === undefined && prevId !== queryVar) {
             networkVis.body.data.nodes.update({
                 id: prevId,
                 color: baseColor,
@@ -534,13 +543,15 @@ function startNodeFlow() {
             });
         }
 
-        networkVis.body.data.nodes.update({
-            id: currentId,
-            color: highlightColor,
-            shadow: { enabled: true, color: 'rgba(139, 92, 246, 0.6)', size: 20 }
-        });
+        if (currentEvidence[currentId] === undefined && currentId !== queryVar) {
+            networkVis.body.data.nodes.update({
+                id: currentId,
+                color: highlightColor,
+                shadow: { enabled: true, color: 'rgba(139, 92, 246, 0.6)', size: 20 }
+            });
+            prevId = currentId;
+        }
 
-        prevId = currentId;
         idx = (idx + 1) % nodes.length;
     }, 220);
 }
