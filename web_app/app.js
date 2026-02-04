@@ -171,20 +171,11 @@ async function fetchNetworks() {
         }
     };
 
-    const debugEl = document.getElementById('apiDebug');
-    const debug = (msg) => {
-        if (!debugEl) return;
-        debugEl.classList.remove('hidden');
-        debugEl.textContent = msg;
-    };
+    const debug = () => {};
 
-    if (!els.networkSelect) {
-        debug('API debug:\nMissing #networkSelect element in DOM.');
-        return;
-    }
+    if (!els.networkSelect) return;
 
     els.networkSelect.innerHTML = '<option>Warming backend... retrying</option>';
-    debug('API debug: starting requests...');
 
     let lastErr = null;
     for (const base of API_FALLBACKS) {
@@ -194,7 +185,6 @@ async function fetchNetworks() {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 networks = await res.json();
                 API_BASE = base;
-                if (debugEl) debugEl.classList.add('hidden');
                 els.networkSelect.innerHTML = '<option value="" disabled selected>Select a Network...</option>';
                 networks.forEach(net => {
                     const opt = document.createElement('option');
@@ -208,14 +198,12 @@ async function fetchNetworks() {
                         loadNetworkUI(networks[0].name);
                     } catch (uiErr) {
                         console.error("UI init error after networks loaded", uiErr);
-                        debug(`API debug:\nNetworks loaded.\nUI error: ${uiErr?.message || uiErr}`);
                     }
                 }
                 return;
             } catch (err) {
                 lastErr = err;
                 console.error(`Failed to load networks from ${base} (attempt ${attempt})`, err);
-                debug(`API debug:\nBase: ${base}\nAttempt: ${attempt}\nError: ${err?.message || err}\nHost: ${window.location.hostname}`);
                 await sleep(1500 * attempt);
             }
         }
@@ -224,7 +212,6 @@ async function fetchNetworks() {
     els.networkSelect.innerHTML = '<option>Error loading API (check backend URL)</option>';
     if (lastErr) {
         console.error("Failed to load networks from all API bases", lastErr);
-        debug(`API debug:\nAll bases failed.\nLast error: ${lastErr?.message || lastErr}\nHost: ${window.location.hostname}`);
     }
 }
 
