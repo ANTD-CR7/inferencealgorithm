@@ -238,6 +238,20 @@ body {
     box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35);
 }
 
+@media (max-width: 768px) {
+    .spline-poster {
+        display: grid;
+        place-items: center;
+    }
+    .spline-mobile-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        background: rgba(6, 182, 212, 0.35);
+        border-color: rgba(6, 182, 212, 0.8);
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.35);
+    }
+}
+
 .spline-loading {
     position: absolute;
     inset: 0;
