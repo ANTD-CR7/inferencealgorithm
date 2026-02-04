@@ -1,10 +1,13 @@
 ﻿
 
 let API_BASE = window.API_BASE || '/api';
+const DEFAULT_API = 'https://bayesian-inference-lab.onrender.com/api';
+const isVercel = window.location.hostname.includes('vercel.app');
 const API_FALLBACKS = [
     window.API_BASE,
-    '/api',
-    'https://bayesian-inference-lab.onrender.com/api'
+    isVercel ? DEFAULT_API : '/api',
+    isVercel ? '/api' : DEFAULT_API,
+    DEFAULT_API
 ].filter(Boolean);
 
 
@@ -147,7 +150,7 @@ async function fetchNetworks() {
     for (const base of API_FALLBACKS) {
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-                const res = await fetchWithTimeout(`${base}/networks`, 20000);
+                const res = await fetchWithTimeout(`${base}/networks`, 25000);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 networks = await res.json();
                 API_BASE = base;
@@ -167,7 +170,7 @@ async function fetchNetworks() {
             } catch (err) {
                 lastErr = err;
                 console.error(`Failed to load networks from ${base} (attempt ${attempt})`, err);
-                debug(`API debug:\nBase: ${base}\nAttempt: ${attempt}\nError: ${err?.message || err}`);
+                debug(`API debug:\nBase: ${base}\nAttempt: ${attempt}\nError: ${err?.message || err}\nHost: ${window.location.hostname}`);
                 await sleep(1500 * attempt);
             }
         }
@@ -176,7 +179,7 @@ async function fetchNetworks() {
     els.networkSelect.innerHTML = '<option>Error loading API (check backend URL)</option>';
     if (lastErr) {
         console.error("Failed to load networks from all API bases", lastErr);
-        debug(`API debug:\nAll bases failed.\nLast error: ${lastErr?.message || lastErr}`);
+        debug(`API debug:\nAll bases failed.\nLast error: ${lastErr?.message || lastErr}\nHost: ${window.location.hostname}`);
     }
 }
 
