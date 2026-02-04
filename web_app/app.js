@@ -877,6 +877,8 @@ function setupSplineLazyLoad() {
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
+    // Fallback: hide loader if Spline takes too long (keeps app usable)
+    setTimeout(hideLoading, 10000);
 
     // Use Intersection Observer for more efficient loading
     const observer = new IntersectionObserver((entries) => {
