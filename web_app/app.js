@@ -164,7 +164,12 @@ async function fetchNetworks() {
                 });
                 if (networks.length > 0) {
                     els.networkSelect.value = networks[0].name;
-                    loadNetworkUI(networks[0].name);
+                    try {
+                        loadNetworkUI(networks[0].name);
+                    } catch (uiErr) {
+                        console.error("UI init error after networks loaded", uiErr);
+                        debug(`API debug:\nNetworks loaded.\nUI error: ${uiErr?.message || uiErr}`);
+                    }
                 }
                 return;
             } catch (err) {
@@ -229,6 +234,10 @@ function renderNeuralMap() {
 
     const container = document.getElementById('neuralMap');
     if (!container) return;
+    if (!window.vis) {
+        console.warn("vis-network not loaded; skipping neural map render.");
+        return;
+    }
 
     const nodes = currentNetwork.nodes.map(node => ({
         id: node,
