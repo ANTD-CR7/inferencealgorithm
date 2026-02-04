@@ -252,7 +252,7 @@ function renderNeuralMap() {
 
     const container = document.getElementById('neuralMap');
     if (!container) return;
-    if (!window.vis) {
+    if (typeof vis === 'undefined' || !window.vis) {
         console.warn("vis-network not loaded; skipping neural map render.");
         return;
     }
