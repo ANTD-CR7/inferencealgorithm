@@ -48,7 +48,9 @@ const els = {
     gibbsProb0: document.getElementById('gibbsProb0'),
     gibbsProb1: document.getElementById('gibbsProb1'),
     gibbsLatency: document.getElementById('gibbsLatency'),
-    compareChartContainer: document.getElementById('compareChartContainer')
+    compareChartContainer: document.getElementById('compareChartContainer'),
+    compareGroup: document.getElementById('compareGroup'),
+    runStatus: document.getElementById('runStatus')
 };
 
 // Init
@@ -62,6 +64,7 @@ async function init() {
     setupSplineLazyLoad();
     ensureVisNetwork();
     ensureGsap();
+    setCompareAvailability(false);
 
     if (!resizeHandlerBound) {
         window.addEventListener('resize', () => {
@@ -72,6 +75,11 @@ async function init() {
         });
         resizeHandlerBound = true;
     }
+}
+
+function setCompareAvailability(enabled) {
+    if (!els.compareGroup) return;
+    els.compareGroup.classList.toggle('hidden', !enabled);
 }
 
 function ensureVisNetwork() {
@@ -489,6 +497,7 @@ async function runInference() {
     if (!currentNetwork) return;
 
     const compareEnabled = els.compareToggle?.checked;
+    if (els.runStatus) els.runStatus.classList.remove('hidden');
     if (!compareEnabled) {
             if (window.gsap) {
                 gsap.to("#neuralMap", { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 });
@@ -518,6 +527,8 @@ async function runInference() {
             ]);
 
             updateCompareResults(veData, gibbsData);
+            localStorage.setItem('compare_unlocked', '1');
+            setCompareAvailability(true);
         } else {
             const payload = {
                 network: currentNetwork.name,
@@ -539,11 +550,14 @@ async function runInference() {
                     stagger: 0.2
                 });
             }
+            localStorage.setItem('compare_unlocked', '1');
+            setCompareAvailability(true);
         }
     } catch (err) {
         alert("Error: " + err.message);
     } finally {
         els.runBtn.innerHTML = '<span class="btn-text">RUN INFERENCE</span><i class="ri-play-fill"></i>';
+        if (els.runStatus) els.runStatus.classList.add('hidden');
     }
 }
 
@@ -600,10 +614,23 @@ function updateNetworkInfo() {
         <div><strong>Roots:</strong> ${roots.join(', ') || '-'}</div>
         <div><strong>Leaves:</strong> ${leaves.join(', ') || '-'}</div>
         <div><strong>Variables:</strong> ${varsPreview}</div>
-        <div><strong>Total CPT entries:</strong> ${totalCpt}</div>
-        <div><strong>Largest CPTs:</strong> ${largestCpts || '-'}</div>
-        <div><strong>State counts:</strong> ${statePreview || '-'}</div>
+        <div class="info-actions"><button id="toggleStats" class="mini-btn">Show advanced</button></div>
+        <div id="advancedStats" class="advanced-stats hidden">
+            <div><strong>Total CPT entries:</strong> ${totalCpt}</div>
+            <div><strong>Largest CPTs:</strong> ${largestCpts || '-'}</div>
+            <div><strong>State counts:</strong> ${statePreview || '-'}</div>
+        </div>
     `;
+
+    const toggleBtn = document.getElementById('toggleStats');
+    const advanced = document.getElementById('advancedStats');
+    if (toggleBtn && advanced) {
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = advanced.classList.contains('hidden');
+            advanced.classList.toggle('hidden', !isHidden);
+            toggleBtn.textContent = isHidden ? 'Hide advanced' : 'Show advanced';
+        });
+    }
 }
 
 async function fetchInference(payload) {
@@ -840,6 +867,8 @@ function saveAppState() {
 
 function loadAppState() {
     const saved = localStorage.getItem('inference_lab_state');
+    const compareUnlocked = localStorage.getItem('compare_unlocked') === '1';
+    setCompareAvailability(compareUnlocked);
     if (!saved) {
         setCompareUI(false);
         applyCompareMode();

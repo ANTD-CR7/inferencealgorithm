@@ -542,6 +542,48 @@ body {
     gap: 2rem;
 }
 
+.run-status {
+    align-self: start;
+    justify-self: start;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.info-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.mini-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.mini-btn:hover {
+    color: var(--text);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+.advanced-stats {
+    margin-top: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
 /* --- Benchmarks View --- */
 .view {
     display: none;

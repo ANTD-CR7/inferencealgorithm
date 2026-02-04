@@ -120,7 +120,7 @@
                         <input type="range" id="sampleRange" min="1000" max="50000" step="1000" value="10000">
                     </div>
 
-                    <div class="control-group">
+                    <div class="control-group" id="compareGroup">
                         <label>COMPARE ALGORITHMS</label>
                         <label class="switch">
                             <input type="checkbox" id="compareToggle">
@@ -146,6 +146,7 @@
 
                 <!-- Main Display: Results -->
                 <section class="results-panel">
+                    <div id="runStatus" class="run-status hidden">Running inference…</div>
 
                     <!-- Result Cards (Single) -->
                     <div class="stats-row single-only">
