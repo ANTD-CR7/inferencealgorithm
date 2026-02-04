@@ -59,6 +59,7 @@ async function init() {
     loadAppState();
     setupSplineLazyLoad();
     ensureVisNetwork();
+    ensureGsap();
 
     if (!resizeHandlerBound) {
         window.addEventListener('resize', () => {
@@ -84,6 +85,20 @@ function ensureVisNetwork() {
     };
     script.onerror = () => {
         console.warn('Failed to load vis-network dynamically');
+    };
+    document.head.appendChild(script);
+}
+
+function ensureGsap() {
+    if (window.gsap) return;
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
+    script.async = true;
+    script.onload = () => {
+        console.log('GSAP loaded dynamically');
+    };
+    script.onerror = () => {
+        console.warn('Failed to load GSAP dynamically');
     };
     document.head.appendChild(script);
 }
@@ -233,7 +248,7 @@ function loadNetworkUI(networkName, isRestoring = false) {
             }
         });
         updateNeuralStatusUI();
-    } else {
+    } else if (window.gsap) {
         gsap.from(".glass-card", {
             duration: 0.8,
             y: 30,
@@ -375,7 +390,9 @@ async function runInference() {
 
     const compareEnabled = els.compareToggle?.checked;
     if (!compareEnabled) {
-        gsap.to("#neuralMap", { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 });
+            if (window.gsap) {
+                gsap.to("#neuralMap", { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 });
+            }
     }
 
     els.runBtn.innerHTML = compareEnabled
@@ -413,13 +430,15 @@ async function runInference() {
             const data = await fetchInference(payload);
             updateResults(data);
 
-            gsap.from(".stat-card .value", {
-                textContent: 0,
-                duration: 1,
-                ease: "power2.out",
-                snap: { textContent: 0.0001 },
-                stagger: 0.2
-            });
+            if (window.gsap) {
+                gsap.from(".stat-card .value", {
+                    textContent: 0,
+                    duration: 1,
+                    ease: "power2.out",
+                    snap: { textContent: 0.0001 },
+                    stagger: 0.2
+                });
+            }
         }
     } catch (err) {
         alert("Error: " + err.message);
@@ -835,10 +854,18 @@ function setupSplineLazyLoad() {
 
     const hideLoading = () => {
         if (loading) {
-            gsap.to(loading, { opacity: 0, duration: 0.5, onComplete: () => loading.classList.add('hidden') });
+            if (window.gsap) {
+                gsap.to(loading, { opacity: 0, duration: 0.5, onComplete: () => loading.classList.add('hidden') });
+            } else {
+                loading.classList.add('hidden');
+            }
         }
         if (poster) {
-            gsap.to(poster, { opacity: 0, duration: 0.8, onComplete: () => poster.classList.add('hidden') });
+            if (window.gsap) {
+                gsap.to(poster, { opacity: 0, duration: 0.8, onComplete: () => poster.classList.add('hidden') });
+            } else {
+                poster.classList.add('hidden');
+            }
         }
     };
 
