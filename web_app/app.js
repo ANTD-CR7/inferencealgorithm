@@ -326,6 +326,7 @@ function renderNeuralMap() {
 
     startNodePulse();
     startNodeFlow();
+    highlightQueryNode();
 }
 
 function toggleEvidence(nodeId) {
@@ -354,6 +355,28 @@ function toggleEvidence(nodeId) {
     networkVis.body.data.nodes.update(node);
     updateNeuralStatusUI();
     saveAppState();
+}
+
+function highlightQueryNode() {
+    if (!networkVis) return;
+    const queryVar = document.querySelector('input[name="queryVar"]:checked')?.value;
+    if (!queryVar) return;
+
+    const nodes = networkVis.body.data.nodes.get();
+    const updates = nodes.map(n => {
+        if (n.id === queryVar) {
+            return {
+                id: n.id,
+                color: { background: 'rgba(250, 204, 21, 0.15)', border: '#facc15' },
+                shadow: { enabled: true, color: 'rgba(250, 204, 21, 0.6)', size: 18 }
+            };
+        }
+        return null;
+    }).filter(Boolean);
+
+    if (updates.length) {
+        networkVis.body.data.nodes.update(updates);
+    }
 }
 
 function startNodePulse() {
@@ -457,6 +480,7 @@ function setupQueryVar(varName, isChecked) {
             networkVis.body.data.nodes.update(node);
             updateNeuralStatusUI();
         }
+        highlightQueryNode();
     });
     els.queryContainer.appendChild(label);
 }
