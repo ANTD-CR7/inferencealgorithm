@@ -221,6 +221,23 @@ body {
     box-shadow: 0 0 40px rgba(6, 182, 212, 0.08);
 }
 
+.spline-mobile-btn {
+    z-index: 6;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    background: rgba(6, 182, 212, 0.2);
+    border: 1px solid rgba(6, 182, 212, 0.6);
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.spline-mobile-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35);
+}
+
 .spline-loading {
     position: absolute;
     inset: 0;

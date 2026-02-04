@@ -848,6 +848,7 @@ function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
     const loading = document.getElementById('splineLoading');
     const poster = document.getElementById('splinePoster');
+    const mobileBtn = document.getElementById('splineMobileBtn');
     if (!spline) return;
 
     const url = spline.getAttribute('data-url');
@@ -856,6 +857,13 @@ function setupSplineLazyLoad() {
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
         if (loading) loading.classList.add('hidden');
+        if (mobileBtn) mobileBtn.classList.remove('hidden');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                if (loading) loading.classList.remove('hidden');
+                startLoad();
+            }, { once: true });
+        }
         return;
     }
 
