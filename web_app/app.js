@@ -283,6 +283,7 @@ function renderNeuralMap() {
     const nodes = currentNetwork.nodes.map(node => ({
         id: node,
         label: node,
+        baseLabel: node,
         color: {
             background: 'rgba(2, 6, 23, 0.7)',
             border: '#06b6d4',
@@ -309,6 +310,14 @@ function renderNeuralMap() {
     };
 
     networkVis = new vis.Network(container, data, options);
+
+    // Ensure all nodes are in view after layout stabilizes
+    networkVis.once('stabilizationIterationsDone', () => {
+        networkVis.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+    });
+    setTimeout(() => {
+        if (networkVis) networkVis.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+    }, 600);
 
     currentEvidence = {};
     updateNeuralStatusUI();
@@ -345,12 +354,15 @@ function toggleEvidence(nodeId) {
     if (currentEvidence[nodeId] === 1) {
         node.color = { background: '#10b981', border: '#fff' };
         node.shadow = { color: 'rgba(16, 185, 129, 0.8)', size: 20 };
+        node.label = `${node.baseLabel || node.id} (T)`;
     } else if (currentEvidence[nodeId] === 0) {
         node.color = { background: '#ef4444', border: '#fff' };
         node.shadow = { color: 'rgba(239, 68, 68, 0.8)', size: 20 };
+        node.label = `${node.baseLabel || node.id} (F)`;
     } else {
         node.color = { background: '#1a1f3a', border: '#6366f1' };
         node.shadow = { color: 'rgba(99, 102, 241, 0.4)', size: 10 };
+        node.label = node.baseLabel || node.id;
     }
     networkVis.body.data.nodes.update(node);
     updateNeuralStatusUI();
@@ -454,6 +466,7 @@ function setupQueryVar(varName, isChecked) {
             delete currentEvidence[varName];
             const node = networkVis.body.data.nodes.get(varName);
             node.color = { background: '#1a1f3a', border: '#6366f1' };
+            node.label = node.baseLabel || node.id;
             networkVis.body.data.nodes.update(node);
             updateNeuralStatusUI();
         }
