@@ -3,6 +3,17 @@
 ## Live Demo
 - https://inferencealgorithm.vercel.app/
 
+## User-Centered Design (UCD)
+This project is explicitly designed around **User-Centered Design (UCD)** principles, prioritizing clarity, accessibility, and interaction over raw technical complexity. The goal is not just to compute Bayesian inference, but to make it **understandable and usable** for real users.
+
+**How UCD is emphasized:**
+- Direct interaction over forms (click nodes to set evidence)
+- Immediate feedback after inference runs
+- Guided discovery with hints and legends
+- Error prevention via query-node highlighting
+- Progressive complexity (comparison is optional)
+- Responsive design for mobile usability
+
 ## Frontend (Vercel)
 - The static UI lives in `web_app/`.
 - Vercel is configured via `vercel.json` at the repo root.
