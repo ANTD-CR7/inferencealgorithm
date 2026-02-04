@@ -58,6 +58,7 @@ async function init() {
     setupAether();
     loadAppState();
     setupSplineLazyLoad();
+    ensureVisNetwork();
 
     if (!resizeHandlerBound) {
         window.addEventListener('resize', () => {
@@ -68,6 +69,23 @@ async function init() {
         });
         resizeHandlerBound = true;
     }
+}
+
+function ensureVisNetwork() {
+    if (window.vis) return;
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/vis-network/standalone/umd/vis-network.min.js';
+    script.async = true;
+    script.onload = () => {
+        console.log('vis-network loaded dynamically');
+        if (currentNetwork) {
+            renderNeuralMap();
+        }
+    };
+    script.onerror = () => {
+        console.warn('Failed to load vis-network dynamically');
+    };
+    document.head.appendChild(script);
 }
 
 function setupEventListeners() {
