@@ -497,6 +497,12 @@ body {
 .chart-container {
     height: 400px;
     margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.results-panel {
+    display: grid;
+    gap: 1.5rem;
 }
 
 /* --- Benchmarks View --- */
@@ -700,6 +706,10 @@ input[type=range] {
     .benchmark-gallery {
         grid-template-columns: 1fr;
     }
+
+    .results-panel {
+        gap: 1.75rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -717,6 +727,14 @@ input[type=range] {
 
     .chart-container {
         height: 240px;
+    }
+
+    .results-panel {
+        gap: 1.5rem;
+    }
+
+    .info-container {
+        margin-top: 0.25rem;
     }
 
     .compare-metrics {
