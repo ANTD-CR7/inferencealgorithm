@@ -1,8 +1,6 @@
+﻿
 
-
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000/api'
-    : '/api';
+const API_BASE = window.API_BASE || '/api';
 
 
 // State
@@ -11,6 +9,7 @@ let currentNetwork = null;
 let currentAlgorithm = 've';
 let networkVis = null;
 let currentEvidence = {};
+let resizeHandlerBound = false;
 
 // DOM Elements
 const els = {
@@ -44,11 +43,23 @@ const els = {
 
 // Init
 async function init() {
+    console.log("Inference Lab: Initialization Started");
+    console.log("Current API_BASE:", API_BASE);
     setupEventListeners();
     await fetchNetworks();
     setupAether();
-    loadAppState(); // Restore saved state
+    loadAppState();
     setupSplineLazyLoad();
+
+    if (!resizeHandlerBound) {
+        window.addEventListener('resize', () => {
+            if (networkVis) {
+                networkVis.redraw();
+                networkVis.fit();
+            }
+        });
+        resizeHandlerBound = true;
+    }
 }
 
 function setupEventListeners() {
@@ -122,7 +133,7 @@ async function fetchNetworks() {
     }
 }
 
-function loadNetworkUI(networkName) {
+function loadNetworkUI(networkName, isRestoring = false) {
     currentNetwork = networks.find(n => n.name === networkName);
     if (!currentNetwork) return;
 
@@ -134,7 +145,33 @@ function loadNetworkUI(networkName) {
     updateNetworkInfo();
     renderNeuralMap();
 
+    if (isRestoring) {
+        Object.entries(currentEvidence).forEach(([nodeId, val]) => {
+            const node = networkVis.body.data.nodes.get(nodeId);
+            if (node) {
+                if (val === 1) {
+                    node.color = { background: '#10b981', border: '#fff' };
+                    node.shadow = { color: 'rgba(16, 185, 129, 0.8)', size: 20 };
+                } else {
+                    node.color = { background: '#ef4444', border: '#fff' };
+                    node.shadow = { color: 'rgba(239, 68, 68, 0.8)', size: 20 };
+                }
+                networkVis.body.data.nodes.update(node);
+            }
+        });
+        updateNeuralStatusUI();
+    } else {
+        gsap.from(".glass-card", {
+            duration: 0.8,
+            y: 30,
+            opacity: 0,
+            stagger: 0.1,
+            ease: "power2.out"
+        });
+    }
+
     saveAppState();
+    showToast("State Auto-saved");
 }
 
 function renderNeuralMap() {
@@ -172,12 +209,6 @@ function renderNeuralMap() {
     };
 
     networkVis = new vis.Network(container, data, options);
-
-    // Auto-scale on window resize
-    window.addEventListener('resize', () => {
-        networkVis.redraw();
-        networkVis.fit();
-    });
 
     currentEvidence = {};
     updateNeuralStatusUI();
@@ -349,7 +380,7 @@ function updateNetworkInfo() {
     const roots = nodes.filter(node => indeg[node] === 0);
     const leaves = nodes.filter(node => outdeg[node] === 0);
 
-    const varsPreview = nodes.slice(0, 10).join(', ') + (nodes.length > 10 ? '…' : '');
+    const varsPreview = nodes.slice(0, 10).join(', ') + (nodes.length > 10 ? '...' : '');
 
     const cptSizes = currentNetwork.cpt_sizes || {};
     const stateCounts = currentNetwork.state_counts || {};
@@ -370,12 +401,12 @@ function updateNetworkInfo() {
         <div><strong>Name:</strong> ${currentNetwork.name}</div>
         <div><strong>Nodes:</strong> ${n} &nbsp; <strong>Edges:</strong> ${m}</div>
         <div><strong>Density:</strong> ${density.toFixed(3)} &nbsp; <strong>Avg In:</strong> ${avgIn.toFixed(2)} &nbsp; <strong>Avg Out:</strong> ${avgOut.toFixed(2)}</div>
-        <div><strong>Roots:</strong> ${roots.join(', ') || '—'}</div>
-        <div><strong>Leaves:</strong> ${leaves.join(', ') || '—'}</div>
+        <div><strong>Roots:</strong> ${roots.join(', ') || '-'}</div>
+        <div><strong>Leaves:</strong> ${leaves.join(', ') || '-'}</div>
         <div><strong>Variables:</strong> ${varsPreview}</div>
         <div><strong>Total CPT entries:</strong> ${totalCpt}</div>
-        <div><strong>Largest CPTs:</strong> ${largestCpts || '—'}</div>
-        <div><strong>State counts:</strong> ${statePreview || '—'}</div>
+        <div><strong>Largest CPTs:</strong> ${largestCpts || '-'}</div>
+        <div><strong>State counts:</strong> ${statePreview || '-'}</div>
     `;
 }
 
@@ -650,48 +681,6 @@ function loadAppState() {
     }
 }
 
-// Updated loadNetworkUI to handle persistence
-const originalLoadNetworkUI = loadNetworkUI;
-loadNetworkUI = function (networkName, isRestoring = false) {
-    currentNetwork = networks.find(n => n.name === networkName);
-    if (!currentNetwork) return;
-
-    els.queryContainer.innerHTML = '';
-    currentNetwork.variables.forEach((v, idx) => {
-        setupQueryVar(v, idx === 0);
-    });
-
-    updateNetworkInfo();
-    renderNeuralMap();
-
-    // If restoring, we need to manually update the nodes that were evidence
-    if (isRestoring) {
-        Object.entries(currentEvidence).forEach(([nodeId, val]) => {
-            const node = networkVis.body.data.nodes.get(nodeId);
-            if (node) {
-                if (val === 1) {
-                    node.color = { background: '#10b981', border: '#fff' };
-                    node.shadow = { color: 'rgba(16, 185, 129, 0.8)', size: 20 };
-                } else {
-                    node.color = { background: '#ef4444', border: '#fff' };
-                    node.shadow = { color: 'rgba(239, 68, 68, 0.8)', size: 20 };
-                }
-                networkVis.body.data.nodes.update(node);
-            }
-        });
-        updateNeuralStatusUI();
-    } else {
-        gsap.from(".glass-card", {
-            duration: 0.8,
-            y: 30,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "power2.out"
-        });
-    }
-    saveAppState();
-    showToast("State Auto-saved");
-};
 
 function showToast(message) {
     let toast = document.getElementById('persistence-toast');
@@ -761,15 +750,8 @@ function setupSplineLazyLoad() {
     const url = spline.getAttribute('data-url');
     if (!url) return;
 
-    // Detect mobile for quality switch
-    const isMobile = window.innerWidth < 768;
-
     const startLoad = () => {
         if (!spline.getAttribute('url')) {
-            // Set quality based on device
-            if (isMobile) {
-                spline.setAttribute('hint', 'pbr'); // Use slightly lower quality for mobile
-            }
             spline.setAttribute('url', url);
         }
     };
@@ -797,3 +779,4 @@ function setupSplineLazyLoad() {
 }
 
 init();
+
