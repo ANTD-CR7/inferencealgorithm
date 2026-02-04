@@ -853,6 +853,12 @@ function setupSplineLazyLoad() {
     const url = spline.getAttribute('data-url');
     if (!url) return;
 
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+        if (loading) loading.classList.add('hidden');
+        return;
+    }
+
     const startLoad = () => {
         if (!spline.getAttribute('url')) {
             spline.setAttribute('url', url);
