@@ -26,6 +26,16 @@
 </head>
 
 <body>
+    <div id="tutorialOverlay" class="tutorial-overlay hidden">
+        <div class="tutorial-card glass-card">
+            <h3>Quick Tour</h3>
+            <p id="tutorialText">Welcome! Click nodes to set evidence.</p>
+            <div class="tutorial-actions">
+                <button class="mini-btn" id="tutorialSkip">Skip</button>
+                <button class="cyber-btn" id="tutorialNext">Next</button>
+            </div>
+        </div>
+    </div>
     <canvas id="aether-canvas"></canvas>
     <div class="bg-glow"></div>
     <div class="grid-overlay"></div>
@@ -137,6 +147,11 @@
                             <span class="slider"></span>
                             <span class="switch-label">Reduce Visual Effects</span>
                         </label>
+                        <div class="font-controls">
+                            <button class="mini-btn" id="fontMinus">A-</button>
+                            <span class="font-label">Text Size</span>
+                            <button class="mini-btn" id="fontPlus">A+</button>
+                        </div>
                     </div>
 
                     <div id="compareSettings" class="control-group hidden">

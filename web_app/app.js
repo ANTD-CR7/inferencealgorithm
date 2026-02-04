@@ -52,7 +52,13 @@ const els = {
     compareGroup: document.getElementById('compareGroup'),
     runStatus: document.getElementById('runStatus'),
     reduceVisuals: document.getElementById('reduceVisuals'),
-    evidenceTip: document.getElementById('evidenceTip')
+    evidenceTip: document.getElementById('evidenceTip'),
+    fontMinus: document.getElementById('fontMinus'),
+    fontPlus: document.getElementById('fontPlus'),
+    tutorialOverlay: document.getElementById('tutorialOverlay'),
+    tutorialText: document.getElementById('tutorialText'),
+    tutorialNext: document.getElementById('tutorialNext'),
+    tutorialSkip: document.getElementById('tutorialSkip')
 };
 
 // Init
@@ -69,6 +75,8 @@ async function init() {
     setCompareAvailability(false);
     setupReduceVisuals();
     showEvidenceTipOnce();
+    setupFontControls();
+    setupTutorial();
 
     if (!resizeHandlerBound) {
         window.addEventListener('resize', () => {
@@ -79,6 +87,65 @@ async function init() {
         });
         resizeHandlerBound = true;
     }
+}
+
+function setupFontControls() {
+    if (!els.fontMinus || !els.fontPlus) return;
+    const saved = localStorage.getItem('text_size') || 'normal';
+    document.body.classList.toggle('text-lg', saved === 'lg');
+    document.body.classList.toggle('text-sm', saved === 'sm');
+
+    const setSize = (size) => {
+        document.body.classList.remove('text-lg', 'text-sm');
+        if (size === 'lg') document.body.classList.add('text-lg');
+        if (size === 'sm') document.body.classList.add('text-sm');
+        localStorage.setItem('text_size', size);
+    };
+
+    els.fontMinus.addEventListener('click', () => {
+        const current = localStorage.getItem('text_size') || 'normal';
+        if (current === 'lg') setSize('normal');
+        else setSize('sm');
+    });
+
+    els.fontPlus.addEventListener('click', () => {
+        const current = localStorage.getItem('text_size') || 'normal';
+        if (current === 'sm') setSize('normal');
+        else setSize('lg');
+    });
+}
+
+function setupTutorial() {
+    if (!els.tutorialOverlay || !els.tutorialText || !els.tutorialNext || !els.tutorialSkip) return;
+    if (localStorage.getItem('tutorial_done') === '1') return;
+
+    const steps = [
+        'Welcome! Select a network and query variable.',
+        'Click nodes to set evidence (TRUE → FALSE → clear).',
+        'Run inference to see probabilities and latency.',
+        'Use Compare to view VE vs Gibbs results.'
+    ];
+    let idx = 0;
+
+    const showStep = () => {
+        els.tutorialText.textContent = steps[idx];
+        els.tutorialOverlay.classList.remove('hidden');
+    };
+
+    const finish = () => {
+        els.tutorialOverlay.classList.add('hidden');
+        localStorage.setItem('tutorial_done', '1');
+    };
+
+    els.tutorialNext.addEventListener('click', () => {
+        idx += 1;
+        if (idx >= steps.length) finish();
+        else showStep();
+    });
+
+    els.tutorialSkip.addEventListener('click', finish);
+
+    showStep();
 }
 
 function setupReduceVisuals() {

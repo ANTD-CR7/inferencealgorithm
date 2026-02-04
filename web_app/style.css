@@ -601,6 +601,56 @@ body.reduced-visuals .floating-badge {
     cursor: pointer;
 }
 
+.font-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.font-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.65);
+    display: grid;
+    place-items: center;
+    z-index: 999;
+}
+
+.tutorial-card {
+    max-width: 420px;
+    text-align: center;
+}
+
+.tutorial-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.tutorial-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+body.text-lg {
+    font-size: 1.08rem;
+}
+
+body.text-sm {
+    font-size: 0.92rem;
+}
 .mini-btn:hover {
     color: var(--text);
     border-color: rgba(6, 182, 212, 0.4);
