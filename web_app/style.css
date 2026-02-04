@@ -634,7 +634,7 @@ input[type=range] {
 
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 1.25rem;
     }
 
     .glass-nav {
@@ -658,8 +658,9 @@ input[type=range] {
     }
 
     .neural-map-container {
-        height: 380px;
+        height: 360px;
         border-radius: 18px;
+        margin-bottom: 1.5rem;
     }
 
     .floating-badge {
@@ -675,6 +676,14 @@ input[type=range] {
         font-size: 1rem;
     }
 
+    .control-group {
+        margin-bottom: 1.8rem;
+    }
+
+    .glass-card {
+        padding: 1.25rem;
+    }
+
     .cyber-btn {
         padding: 1rem;
         font-size: 0.95rem;
@@ -687,23 +696,27 @@ input[type=range] {
     .view-title {
         font-size: 2rem;
     }
+
+    .benchmark-gallery {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
     .container {
-        padding: 0.8rem;
+        padding: 1rem;
     }
 
     .neural-map-container {
-        height: 300px;
+        height: 280px;
     }
 
     .stats-row {
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .chart-container {
-        height: 260px;
+        height: 240px;
     }
 
     .compare-metrics {
@@ -711,7 +724,15 @@ input[type=range] {
     }
 
     .glass-card {
-        padding: 1rem;
+        padding: 1.1rem;
+    }
+
+    .nav-btn {
+        padding: 0.7rem 0.9rem;
+    }
+
+    .radio-group {
+        gap: 0.75rem;
     }
 }
 
