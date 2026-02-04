@@ -347,6 +347,7 @@ function toggleEvidence(nodeId) {
 }
 
 function updateNeuralStatusUI() {
+    if (!els.neuralStatus) return;
     const keys = Object.keys(currentEvidence);
     if (keys.length === 0) {
         els.neuralStatus.innerHTML = '<span style="opacity:0.5; font-style:italic">No neurons probed. Click map to set observations.</span>';
