@@ -118,30 +118,51 @@ function setupEventListeners() {
 }
 
 async function fetchNetworks() {
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const fetchWithTimeout = async (url, timeoutMs = 15000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, {
+                cache: 'no-store',
+                mode: 'cors',
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(id);
+        }
+    };
+
+    els.networkSelect.innerHTML = '<option>Warming backend... retrying</option>';
+
     let lastErr = null;
     for (const base of API_FALLBACKS) {
-        try {
-            const res = await fetch(`${base}/networks`, { cache: 'no-store' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            networks = await res.json();
-            API_BASE = base;
-            els.networkSelect.innerHTML = '<option value="" disabled selected>Select a Network...</option>';
-            networks.forEach(net => {
-                const opt = document.createElement('option');
-                opt.value = net.name;
-                opt.textContent = net.name;
-                els.networkSelect.appendChild(opt);
-            });
-            if (networks.length > 0) {
-                els.networkSelect.value = networks[0].name;
-                loadNetworkUI(networks[0].name);
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const res = await fetchWithTimeout(`${base}/networks`, 20000);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                networks = await res.json();
+                API_BASE = base;
+                els.networkSelect.innerHTML = '<option value="" disabled selected>Select a Network...</option>';
+                networks.forEach(net => {
+                    const opt = document.createElement('option');
+                    opt.value = net.name;
+                    opt.textContent = net.name;
+                    els.networkSelect.appendChild(opt);
+                });
+                if (networks.length > 0) {
+                    els.networkSelect.value = networks[0].name;
+                    loadNetworkUI(networks[0].name);
+                }
+                return;
+            } catch (err) {
+                lastErr = err;
+                console.error(`Failed to load networks from ${base} (attempt ${attempt})`, err);
+                await sleep(1500 * attempt);
             }
-            return;
-        } catch (err) {
-            lastErr = err;
-            console.error(`Failed to load networks from ${base}`, err);
         }
     }
+
     els.networkSelect.innerHTML = '<option>Error loading API (check backend URL)</option>';
     if (lastErr) console.error("Failed to load networks from all API bases", lastErr);
 }
