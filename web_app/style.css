@@ -502,7 +502,7 @@ body {
 
 .results-panel {
     display: grid;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 /* --- Benchmarks View --- */
@@ -708,7 +708,7 @@ input[type=range] {
     }
 
     .results-panel {
-        gap: 1.75rem;
+        gap: 2.25rem;
     }
 }
 
@@ -730,7 +730,7 @@ input[type=range] {
     }
 
     .results-panel {
-        gap: 1.5rem;
+        gap: 2rem;
     }
 
     .info-container {
