@@ -1,6 +1,11 @@
 ﻿
 
-const API_BASE = window.API_BASE || '/api';
+let API_BASE = window.API_BASE || '/api';
+const API_FALLBACKS = [
+    window.API_BASE,
+    '/api',
+    'https://bayesian-inference-lab.onrender.com/api'
+].filter(Boolean);
 
 
 // State
@@ -113,24 +118,32 @@ function setupEventListeners() {
 }
 
 async function fetchNetworks() {
-    try {
-        const res = await fetch(`${API_BASE}/networks`);
-        networks = await res.json();
-        els.networkSelect.innerHTML = '<option value="" disabled selected>Select a Network...</option>';
-        networks.forEach(net => {
-            const opt = document.createElement('option');
-            opt.value = net.name;
-            opt.textContent = net.name;
-            els.networkSelect.appendChild(opt);
-        });
-        if (networks.length > 0) {
-            els.networkSelect.value = networks[0].name;
-            loadNetworkUI(networks[0].name);
+    let lastErr = null;
+    for (const base of API_FALLBACKS) {
+        try {
+            const res = await fetch(`${base}/networks`, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            networks = await res.json();
+            API_BASE = base;
+            els.networkSelect.innerHTML = '<option value="" disabled selected>Select a Network...</option>';
+            networks.forEach(net => {
+                const opt = document.createElement('option');
+                opt.value = net.name;
+                opt.textContent = net.name;
+                els.networkSelect.appendChild(opt);
+            });
+            if (networks.length > 0) {
+                els.networkSelect.value = networks[0].name;
+                loadNetworkUI(networks[0].name);
+            }
+            return;
+        } catch (err) {
+            lastErr = err;
+            console.error(`Failed to load networks from ${base}`, err);
         }
-    } catch (err) {
-        console.error("Failed to load networks", err);
-        els.networkSelect.innerHTML = '<option>Error loading API</option>';
     }
+    els.networkSelect.innerHTML = '<option>Error loading API (check backend URL)</option>';
+    if (lastErr) console.error("Failed to load networks from all API bases", lastErr);
 }
 
 function loadNetworkUI(networkName, isRestoring = false) {
