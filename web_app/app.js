@@ -416,7 +416,19 @@ function renderNeuralMap() {
             const nodeId = params.nodes[0];
             const queryVar = document.querySelector('input[name="queryVar"]:checked')?.value;
             if (nodeId === queryVar) {
-                showToast("Can't set evidence on the query variable");
+                // Auto-switch query to another variable for better UX
+                const next = (currentNetwork?.variables || []).find(v => v !== queryVar);
+                if (next) {
+                    const input = document.querySelector(`input[name="queryVar"][value="${next}"]`);
+                    if (input) {
+                        input.checked = true;
+                        currentAlgorithm = currentAlgorithm; // no-op to keep state
+                        highlightQueryNode();
+                        showToast(`Query moved to ${next}`);
+                    }
+                } else {
+                    showToast("Can't set evidence on the query variable");
+                }
                 return;
             }
             toggleEvidence(nodeId);
