@@ -19,6 +19,7 @@ let networkVis = null;
 let currentEvidence = {};
 let resizeHandlerBound = false;
 let pulseInterval = null;
+let flowInterval = null;
 
 // DOM Elements
 const els = {
@@ -328,6 +329,7 @@ function renderNeuralMap() {
     networkVis.on("blurNode", () => { container.style.cursor = 'default'; });
 
     startNodePulse();
+    startNodeFlow();
 }
 
 function toggleEvidence(nodeId) {
@@ -362,6 +364,8 @@ function startNodePulse() {
     const baseSize = 25;
     let t = 0;
 
+    if (window.innerWidth < 768) return;
+
     pulseInterval = setInterval(() => {
         if (!networkVis || !networkVis.body || !networkVis.body.data) return;
         const nodes = networkVis.body.data.nodes.get();
@@ -373,6 +377,48 @@ function startNodePulse() {
         networkVis.body.data.nodes.update(updates);
         t += 0.25;
     }, 120);
+}
+
+function startNodeFlow() {
+    if (!networkVis) return;
+    if (flowInterval) clearInterval(flowInterval);
+    if (window.innerWidth < 768) return;
+
+    const nodes = networkVis.body.data.nodes.get();
+    if (!nodes.length) return;
+
+    let idx = 0;
+    const baseColor = {
+        background: 'rgba(2, 6, 23, 0.7)',
+        border: '#06b6d4'
+    };
+    const highlightColor = {
+        background: 'rgba(6, 182, 212, 0.35)',
+        border: '#8b5cf6'
+    };
+
+    let prevId = null;
+    flowInterval = setInterval(() => {
+        if (!networkVis || !networkVis.body || !networkVis.body.data) return;
+        const currentId = nodes[idx].id;
+
+        if (prevId !== null) {
+            networkVis.body.data.nodes.update({
+                id: prevId,
+                color: baseColor,
+                shadow: { enabled: true, color: 'rgba(6, 182, 212, 0.4)', size: 10 }
+            });
+        }
+
+        networkVis.body.data.nodes.update({
+            id: currentId,
+            color: highlightColor,
+            shadow: { enabled: true, color: 'rgba(139, 92, 246, 0.6)', size: 20 }
+        });
+
+        prevId = currentId;
+        idx = (idx + 1) % nodes.length;
+    }, 220);
 }
 
 function updateNeuralStatusUI() {
