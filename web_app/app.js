@@ -176,6 +176,11 @@ async function fetchNetworks() {
         debugEl.textContent = msg;
     };
 
+    if (!els.networkSelect) {
+        debug('API debug:\nMissing #networkSelect element in DOM.');
+        return;
+    }
+
     els.networkSelect.innerHTML = '<option>Warming backend... retrying</option>';
     debug('API debug: starting requests...');
 
@@ -225,6 +230,7 @@ function loadNetworkUI(networkName, isRestoring = false) {
     currentNetwork = networks.find(n => n.name === networkName);
     if (!currentNetwork) return;
 
+    if (!els.queryContainer) return;
     els.queryContainer.innerHTML = '';
     currentNetwork.variables.forEach((v, idx) => {
         setupQueryVar(v, idx === 0);
