@@ -316,7 +316,7 @@ function renderNeuralMap() {
             const nodeId = params.nodes[0];
             const queryVar = document.querySelector('input[name="queryVar"]:checked')?.value;
             if (nodeId === queryVar) {
-                alert("Cannot set evidence on the target variable!");
+                showToast("Can't set evidence on the query variable");
                 return;
             }
             toggleEvidence(nodeId);
