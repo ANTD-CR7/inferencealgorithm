@@ -69,7 +69,7 @@ async function init() {
     await fetchNetworks();
     setupAether();
     loadAppState();
-    setupSplineLazyLoad();
+    // Spline disabled
     ensureVisNetwork();
     ensureGsap();
     setCompareAvailability(false);
