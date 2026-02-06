@@ -44,14 +44,6 @@ async def health_check():
     """Health check endpoint for Render."""
     return {"status": "healthy"}
 
-@app.get("/docs")
-@app.get("/docs/")
-async def serve_docs():
-    """Serve static docs page."""
-    docs_path = os.path.join("web_app", "docs", "index.html")
-    if os.path.exists(docs_path):
-        return FileResponse(docs_path)
-    raise HTTPException(status_code=404, detail="Docs not found")
 
 @app.get("/api/networks", response_model=List[NetworkInfo])
 async def get_networks():
