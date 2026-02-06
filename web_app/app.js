@@ -69,7 +69,7 @@ async function init() {
     await fetchNetworks();
     setupAether();
     loadAppState();
-    // Spline disabled
+    setupSplineLazyLoad();
     ensureVisNetwork();
     ensureGsap();
     setCompareAvailability(false);
@@ -273,7 +273,7 @@ async function fetchNetworks() {
         }
     };
 
-    const debug = () => {};
+    const debug = () => { };
 
     if (!els.networkSelect) return;
 
@@ -616,9 +616,9 @@ async function runInference() {
     const compareEnabled = els.compareToggle?.checked;
     if (els.runStatus) els.runStatus.classList.remove('hidden');
     if (!compareEnabled) {
-            if (window.gsap) {
-                gsap.to("#neuralMap", { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 });
-            }
+        if (window.gsap) {
+            gsap.to("#neuralMap", { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 });
+        }
     }
 
     els.runBtn.innerHTML = compareEnabled
@@ -1083,6 +1083,8 @@ function triggerNeuralPulse() {
     }
 }
 
+init();
+
 function setupSplineLazyLoad() {
     const spline = document.querySelector('spline-viewer');
     const loading = document.getElementById('splineLoading');
@@ -1099,27 +1101,13 @@ function setupSplineLazyLoad() {
     };
 
     const hideLoading = () => {
-        if (loading) {
-            if (window.gsap) {
-                gsap.to(loading, { opacity: 0, duration: 0.5, onComplete: () => loading.classList.add('hidden') });
-            } else {
-                loading.classList.add('hidden');
-            }
-        }
-        if (poster) {
-            if (window.gsap) {
-                gsap.to(poster, { opacity: 0, duration: 0.8, onComplete: () => poster.classList.add('hidden') });
-            } else {
-                poster.classList.add('hidden');
-            }
-        }
+        if (loading) loading.classList.add('hidden');
+        if (poster) poster.classList.add('hidden');
     };
 
     spline.addEventListener('load', hideLoading, { once: true });
-    // Fallback: hide loader if Spline takes too long (keeps app usable)
-    setTimeout(hideLoading, 10000);
+    setTimeout(hideLoading, 12000);
 
-    // Use Intersection Observer for more efficient loading
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
             startLoad();
@@ -1129,6 +1117,3 @@ function setupSplineLazyLoad() {
 
     observer.observe(spline);
 }
-
-init();
-
