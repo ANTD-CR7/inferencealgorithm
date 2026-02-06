@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inference Lab Docs</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <nav class="glass-nav">
+        <div class="logo">
+            <span>INFERENCE<span class="highlight">LAB</span></span>
+        </div>
+        <div class="nav-links">
+            <a class="nav-btn" href="/">HOME</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 class="view-title">Documentation</h1>
+        <p class="view-subtitle">User Guide and Technical Reference</p>
+
+        <section class="glass-card">
+            <h2>User Guide</h2>
+            <ol>
+                <li>Select a network from the dropdown.</li>
+                <li>Choose a query variable.</li>
+                <li>Click nodes to set evidence (TRUE → FALSE → clear).</li>
+                <li>Run inference and review results.</li>
+            </ol>
+        </section>
+
+        <section class="glass-card" style="margin-top: 1.5rem;">
+            <h2>API Endpoints</h2>
+            <p><strong>GET</strong> <code>/api/networks</code> – Returns network metadata.</p>
+            <p><strong>POST</strong> <code>/api/inference</code> – Runs inference and returns probabilities.</p>
+        </section>
+
+        <section class="glass-card" style="margin-top: 1.5rem;">
+            <h2>Docs Files</h2>
+            <ul>
+                <li><code>TECHNICAL_DOCS.md</code> – Full technical documentation.</li>
+                <li><code>UCD.md</code> – User‑Centered Design overview.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+
+</html>
