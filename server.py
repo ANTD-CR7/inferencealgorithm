@@ -1,5 +1,7 @@
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+import os
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,7 +9,7 @@ from typing import Dict, List, Optional, Any
 import experiment_utils as utils
 from experiment_utils import get_all_networks
 
-app = FastAPI(title="Bayesian Inference Lab")
+app = FastAPI(title="Bayesian Inference Lab", docs_url="/api/docs", redoc_url=None)
 
 # Enable CORS for development
 app.add_middleware(
@@ -41,6 +43,15 @@ class NetworkInfo(BaseModel):
 async def health_check():
     """Health check endpoint for Render."""
     return {"status": "healthy"}
+
+@app.get("/docs")
+@app.get("/docs/")
+async def serve_docs():
+    """Serve static docs page."""
+    docs_path = os.path.join("web_app", "docs", "index.html")
+    if os.path.exists(docs_path):
+        return FileResponse(docs_path)
+    raise HTTPException(status_code=404, detail="Docs not found")
 
 @app.get("/api/networks", response_model=List[NetworkInfo])
 async def get_networks():
@@ -148,19 +159,19 @@ async def run_inference(req: InferenceRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- Serve Static Files ---
-import os
+@app.get("/")
+async def read_index():
+    return FileResponse("web_app/index.html")
 
-# Serve PNGs/results first
-app.mount("/results", StaticFiles(directory=".", html=False), name="results")
-
-# Serve UI at root
+# Mount web_app at root for .css and .js
 if os.path.exists("web_app"):
-    app.mount("/", StaticFiles(directory="web_app", html=True), name="static")
+    app.mount("/", StaticFiles(directory="web_app"), name="static")
 
+# Mount results for PNGs
+app.mount("/results", StaticFiles(directory="."), name="results")
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting Bayesian Inference Lab Server...")
-    print("👉 Open http://localhost:8000 in your browser")
+    print(" Starting Bayesian Inference Lab Server...")
+    print(" Open http://localhost:8000 in your browser")
     uvicorn.run(app, host="0.0.0.0", port=8000)
