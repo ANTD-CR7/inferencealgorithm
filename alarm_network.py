@@ -1,40 +1,41 @@
 """
-ALARM BAYESIAN NETWORK
-Standard benchmark for inference algorithms
+Alarm Bayesian Network
+Standard benchmark for inference algorithms.
 
 Structure:
-  Burglary → Alarm ← Earthquake
-  Alarm → PhoneCall
+  Burglary -> Alarm <- Earthquake
+  Alarm -> PhoneCall
 """
 
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
+
 def create_alarm_network():
-    """Create and return Alarm Network"""
-    
-    # Define structure (edges)
+    """Build and return the Alarm Bayesian network."""
+
+    # Graph structure (edges)
     model = DiscreteBayesianNetwork([
         ('Burglary', 'Alarm'),
         ('Earthquake', 'Alarm'),
         ('Alarm', 'PhoneCall')
     ])
-    
-    # CPT for Burglary (no parents)
+
+    # CPT: Burglary (no parents)
     cpd_burglary = TabularCPD(
         variable='Burglary',
         variable_card=2,
         values=[[0.999], [0.001]]
     )
-    
-    # CPT for Earthquake (no parents)
+
+    # CPT: Earthquake (no parents)
     cpd_earthquake = TabularCPD(
         variable='Earthquake',
         variable_card=2,
         values=[[0.998], [0.002]]
     )
-    
-    # CPT for Alarm (parents: Burglary, Earthquake)
+
+    # CPT: Alarm (parents: Burglary, Earthquake)
     cpd_alarm = TabularCPD(
         variable='Alarm',
         variable_card=2,
@@ -45,8 +46,8 @@ def create_alarm_network():
         evidence=['Burglary', 'Earthquake'],
         evidence_card=[2, 2]
     )
-    
-    # CPT for PhoneCall (parent: Alarm)
+
+    # CPT: PhoneCall (parent: Alarm)
     cpd_phone = TabularCPD(
         variable='PhoneCall',
         variable_card=2,
@@ -57,21 +58,20 @@ def create_alarm_network():
         evidence=['Alarm'],
         evidence_card=[2]
     )
-    
-    # Add CPTs to model
+
+    # Register CPTs with the model
     model.add_cpds(cpd_burglary, cpd_earthquake, cpd_alarm, cpd_phone)
-    
-    # Verify model
-    assert model.check_model(), "Model is invalid!"
-    
-    print("✅ Alarm Network created!")
+
+    # Validate model consistency
+    assert model.check_model(), "Model is invalid"
+
+    print("OK: Alarm Network created")
     print("   Variables:", list(model.nodes()))
     print("   Edges:", list(model.edges()))
-    
+
     return model
 
 
-# Test it
 if __name__ == "__main__":
     network = create_alarm_network()
-    print("\n🎉 Network ready for inference!")
+    print("\nOK: Network ready for inference")

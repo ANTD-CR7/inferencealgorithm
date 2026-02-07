@@ -12,7 +12,7 @@ from pgmpy.models import BayesianNetwork
 from pgmpy.inference import VariableElimination
 from pgmpy.sampling import GibbsSampling
 
-# Import networks
+# Network factories (used by experiments and API)
 from alarm_network import create_alarm_network
 from student_network import create_student_network
 from synthetic_network import create_synthetic_network
@@ -37,7 +37,7 @@ def get_network_queries() -> Dict[str, Tuple[str, Dict[str, int], int]]:
     }
 
 def run_exact_inference(model: BayesianNetwork, query_var: str, evidence: Dict[str, int], target_state: int) -> float:
-    """Runs Variable Elimination to get exact probability."""
+    """Exact inference via Variable Elimination (returns P(query_var=target_state | evidence))."""
     ve = VariableElimination(model)
     result = ve.query([query_var], evidence=evidence, show_progress=False)
     return result.values[target_state]
@@ -45,16 +45,16 @@ def run_exact_inference(model: BayesianNetwork, query_var: str, evidence: Dict[s
 def run_gibbs_inference(model: BayesianNetwork, query_var: str, evidence: Dict[str, int], 
                        samples: int, target_state: int) -> Tuple[float, float]:
     """
-    Runs Gibbs Sampling with manual rejection sampling.
-    Returns: (EstimatedProbability, ExecutionTime)
+    Gibbs sampling with manual evidence filtering.
+    Returns (estimated_probability, execution_time_seconds).
     """
     gibbs = GibbsSampling(model)
     start_time = time.time()
     
-    # Generate samples (no evidence passed to sample() due to pgmpy limitation)
+    # Generate unconditional samples; evidence is applied by filtering.
     generated_samples = gibbs.sample(size=samples)
     
-    # Manual Rejection Sampling
+    # Evidence filtering (manual rejection)
     filtered_samples = generated_samples
     for var, state in evidence.items():
         filtered_samples = filtered_samples[filtered_samples[var] == state]
@@ -64,7 +64,7 @@ def run_gibbs_inference(model: BayesianNetwork, query_var: str, evidence: Dict[s
     if len(filtered_samples) == 0:
         return 0.0, execution_time
         
-    # Calculate probability
+    # Empirical probability of the target state
     prob = filtered_samples[query_var].value_counts(normalize=True).get(target_state, 0.0)
     
     return prob, execution_time
@@ -83,9 +83,10 @@ def save_plot(filename: str):
     """Saves plot with high resolution."""
     plt.tight_layout()
     plt.savefig(filename, dpi=300, bbox_inches='tight')
-    print(f"✅ Graph saved to: {filename}")
+    print(f"OK: Graph saved to: {filename}")
 
 def save_results(df: pd.DataFrame, filename: str):
     """Saves DataFrame to CSV."""
     df.to_csv(filename, index=False)
-    print(f"✅ Results saved to: {filename}")
+    print(f"OK: Results saved to: {filename}")
+

@@ -11,7 +11,7 @@ from experiment_utils import get_all_networks
 
 app = FastAPI(title="Bayesian Inference Lab", docs_url="/api/docs", redoc_url=None)
 
-# Enable CORS for development
+# CORS (dev-friendly; tighten for production)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Data Models ---
+# --- Request/Response Models ---
 class InferenceRequest(BaseModel):
     network: str
     algorithm: str  # "ve" or "gibbs"
@@ -37,7 +37,7 @@ class NetworkInfo(BaseModel):
     state_counts: Dict[str, int] = {}
     total_cpt_entries: int = 0
 
-# --- API Endpoints ---
+# --- HTTP Endpoints ---
 
 @app.get("/health")
 async def health_check():
@@ -90,11 +90,11 @@ async def run_inference(req: InferenceRequest):
     
     model = networks[req.network]
     
-    # Check if query_var exists
+    # Validate query variable exists in model
     if req.query_var not in model.nodes():
          raise HTTPException(status_code=400, detail=f"Query variable {req.query_var} not in network")
 
-    # Result structure
+    # Standard response payload
     result = {
         "algorithm": req.algorithm,
         "probabilities": {},
@@ -104,11 +104,7 @@ async def run_inference(req: InferenceRequest):
 
     try:
         if req.algorithm == "ve":
-            # Variable Elimination
-            # We want full distribution P(Q | E)
-            # The utils run_exact_inference returns scalar probability for a target state
-            # Here we want the full distribution. We'll use pgmpy directly or modify utils.
-            # Let's use pgmpy directly for full distribution to return both states.
+            # Exact inference via Variable Elimination (full distribution)
             from pgmpy.inference import VariableElimination
             import time
             
@@ -117,7 +113,7 @@ async def run_inference(req: InferenceRequest):
             ve_res = ve.query([req.query_var], evidence=req.evidence, show_progress=False)
             duration = time.time() - start
             
-            # Map values to 0 and 1
+            # Map values to binary states
             result["probabilities"] = {
                 "0": ve_res.values[0],
                 "1": ve_res.values[1]
@@ -125,10 +121,7 @@ async def run_inference(req: InferenceRequest):
             result["time_ms"] = duration * 1000
 
         elif req.algorithm == "gibbs":
-            # Gibbs Sampling
-            # Use utils but we need full distribution, utils currently returns scalar for target=1
-            # We can use utils.run_gibbs_inference and derive 0 from 1, or just re-implement slightly
-            # to be safe and return standard format.
+            # Approximate inference via Gibbs sampling (derive P(0) from P(1))
             prob_1, duration = utils.run_gibbs_inference(
                 model, req.query_var, req.evidence, req.samples, target_state=1
             )
@@ -155,11 +148,11 @@ async def run_inference(req: InferenceRequest):
 async def read_index():
     return FileResponse("web_app/index.html")
 
-# Mount web_app at root for .css and .js
+# Static web_app for UI assets
 if os.path.exists("web_app"):
     app.mount("/", StaticFiles(directory="web_app"), name="static")
 
-# Mount results for PNGs
+# Static results for benchmark images
 app.mount("/results", StaticFiles(directory="."), name="results")
 
 if __name__ == "__main__":

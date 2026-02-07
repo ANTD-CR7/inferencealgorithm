@@ -11,7 +11,7 @@ const API_FALLBACKS = [
 ].filter(Boolean);
 
 
-// State
+// App state (in-memory)
 let networks = [];
 let currentNetwork = null;
 let currentAlgorithm = 've';
@@ -21,7 +21,7 @@ let resizeHandlerBound = false;
 let pulseInterval = null;
 let flowInterval = null;
 
-// DOM Elements
+// Cached DOM references
 const els = {
     navBtns: document.querySelectorAll('.nav-btn'),
     views: document.querySelectorAll('.view'),
@@ -61,7 +61,7 @@ const els = {
     tutorialSkip: document.getElementById('tutorialSkip')
 };
 
-// Init
+// Bootstrapping
 async function init() {
     console.log("Inference Lab: Initialization Started");
     console.log("Current API_BASE:", API_BASE);
@@ -968,7 +968,7 @@ function setupAether() {
     animate();
 }
 
-// --- Persistence ---
+// --- Persistence (localStorage) ---
 
 function saveAppState() {
     const state = {
@@ -1036,7 +1036,7 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// --- Animations ---
+// --- Animations & motion cues ---
 
 function triggerNeuralPulse() {
     if (!networkVis || !currentNetwork) return;
